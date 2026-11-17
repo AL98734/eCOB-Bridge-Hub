@@ -1,0 +1,796 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Process Guide — eCOB Bridge Hub. How eCOB investigations and updates flow, step by step.">
+<title>Process Guide — eCOB Bridge Hub</title>
+<script>
+  (function () {
+    var t = localStorage.getItem('ecob-theme');
+    if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+<style>
+:root{
+  --bg:#f7f6fc; --surface:#ffffff; --surface-2:#f2f0fa; --border:#e6e3f0;
+  --text:#1b1d21; --muted:#5c6370; --faint:#8a919e;
+  --brand:#5c00bd; --brand-hover:#4a009c; --on-brand:#ffffff;
+  --shadow:0 1px 2px rgba(46,16,101,.05),0 4px 16px -4px rgba(46,16,101,.10);
+  --shadow-hover:0 2px 4px rgba(46,16,101,.07),0 12px 30px -6px rgba(46,16,101,.20);
+  --ok:#00bcbb; --warn:#d83b01; --amber:#d97706;
+  --purple:#8271fa; --blue:#44b8f3; --deep:#5c00bd; --cyan:#00bcbb;
+  --radius:16px; --radius-sm:10px;
+}
+[data-theme="dark"]{
+  --bg:#191522; --surface:#221d30; --surface-2:#2a2438; --border:#383147;
+  --text:#f3f2f8; --muted:#a9a4bd; --faint:#7d7890;
+  --brand:#8271fa; --brand-hover:#9d8bff; --on-brand:#14101f;
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 6px 20px -4px rgba(0,0,0,.5);
+  --shadow-hover:0 2px 4px rgba(0,0,0,.4),0 12px 32px -6px rgba(0,0,0,.6);
+  --ok:#26d0cf; --warn:#f7630c; --amber:#fbbf24;
+  --purple:#9d8bff; --blue:#6ecbf7; --deep:#b9adff; --cyan:#26d0cf;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",sans-serif;
+  font-size:14px; line-height:1.45; -webkit-font-smoothing:antialiased;
+}
+.skip-link{position:absolute;left:-999px;top:0;background:var(--brand);color:var(--on-brand);padding:8px 14px;border-radius:0 0 8px 0;z-index:50}
+.skip-link:focus{left:0}
+a{color:var(--brand)}
+button{font:inherit}
+
+/* ---------- header ---------- */
+.app-header{
+  position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px;
+  padding:10px 20px;border-bottom:1px solid var(--border);
+  background:color-mix(in srgb,var(--surface) 86%,transparent);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+}
+.app-header::before{
+  content:"";position:absolute;left:0;right:0;top:0;height:3px;
+  background:linear-gradient(90deg,#5c00bd,#8271fa 35%,#44b8f3 70%,#00bcbb);
+}
+.brand-mark{
+  width:38px;height:38px;border-radius:10px;flex:0 0 auto;
+  background:#ffffff;padding:3px;object-fit:contain;
+  box-shadow:inset 0 0 0 1px var(--border);
+}
+.brand-name{font-weight:650;font-size:15px;display:block;line-height:1.15}
+.brand-tag{font-size:11.5px;color:var(--muted);display:block}
+.header-page{font-size:15px;font-weight:650;letter-spacing:-.2px}
+.header-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+.chip{
+  display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);
+  background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:4px 12px;
+}
+.chip .dot{width:7px;height:7px;border-radius:50%;background:var(--cyan)}
+
+.btn{
+  position:relative;overflow:hidden;
+  display:inline-flex;align-items:center;gap:7px;border:1px solid var(--border);
+  background:var(--surface);color:var(--text);border-radius:var(--radius-sm);
+  padding:7px 13px;font-size:13px;font-weight:550;cursor:pointer;
+  transition:background .15s,box-shadow .15s,transform .1s,border-color .15s;
+}
+.btn:hover{background:var(--surface-2)}
+.btn:active{transform:scale(.97)}
+.btn-icon{padding:8px}
+.btn:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+
+/* ---------- sidebar ---------- */
+body{padding-left:248px}
+.sidebar{
+  position:fixed;left:0;top:0;bottom:0;width:248px;z-index:22;
+  padding:14px 12px 16px;overflow-y:auto;display:flex;flex-direction:column;
+  background:var(--surface);border-right:1px solid var(--border);
+}
+.side-brand{
+  display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--text);
+  padding:4px 8px 14px;margin-bottom:10px;border-bottom:1px solid var(--border);
+}
+.side-brand .brand-name,.side-brand .brand-tag{white-space:nowrap}
+.side-section{
+  padding:8px 10px 6px;font-size:10.5px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.7px;color:var(--faint);
+}
+.side-link{
+  display:flex;align-items:center;gap:10px;padding:9px 10px;margin-bottom:2px;
+  border-radius:10px;color:var(--text);text-decoration:none;font-size:13px;font-weight:550;
+  transition:background .13s,color .13s;
+}
+.side-link:hover{background:var(--surface-2)}
+.side-link.active{
+  background:color-mix(in srgb,var(--brand) 11%,var(--surface));color:var(--brand);font-weight:650;
+}
+.side-link svg{flex:0 0 auto;opacity:.85}
+.side-link.active svg{opacity:1}
+.side-foot{
+  margin-top:auto;padding:12px 8px 4px;border-top:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+}
+.side-foot .foot-text{font-size:12.5px;font-weight:600;line-height:1.2}
+.side-foot .foot-text small{display:block;font-size:11px;color:var(--muted);font-weight:500}
+.side-scrim{
+  position:fixed;inset:0;z-index:14;background:rgba(24,14,45,.45);display:none;
+}
+.side-toggle{display:none}
+
+/* ---------- layout ---------- */
+main{max-width:1360px;margin:0 auto;padding:22px 20px 60px}
+.page-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:22px}
+.page-title{font-size:22px;font-weight:680;margin:0 0 3px;letter-spacing:-.2px}
+.page-sub{margin:0;color:var(--muted);font-size:13px}
+.card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:18px 20px;
+  transition:box-shadow .2s,transform .2s;
+  animation:rise .45s cubic-bezier(.2,.7,.3,1) var(--d,0s) backwards;
+}
+.card.hoverable:hover{box-shadow:var(--shadow-hover);transform:translateY(-2px)}
+.card-title{font-size:14.5px;font-weight:650;margin:0 0 2px}
+.card-sub{font-size:12px;color:var(--muted);margin:0 0 12px}
+.sub-title{font-size:13.5px;font-weight:650;margin:20px 0 2px;letter-spacing:-.1px}
+.tip-line{margin-top:10px;font-size:12px;color:var(--muted);line-height:1.5}
+.ov-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+@media(max-width:640px){.ov-grid{grid-template-columns:1fr}}
+.ov-plan{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px}
+.ov-plan h4{font-size:12px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.ov-fields{display:flex;gap:10px;flex-wrap:wrap}
+.ov-field{display:flex;flex-direction:column;gap:5px;flex:1;min-width:130px}
+.ov-field label{font-size:11px;font-weight:650;color:var(--muted)}
+.ov-field input{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:9px 11px;font-size:13px;color:var(--text);outline:none;font-family:inherit}
+.ov-field input:focus{border-color:var(--purple);box-shadow:0 0 0 3px color-mix(in srgb,var(--purple) 18%,transparent)}
+.ov-actions{display:flex;align-items:center;gap:14px;margin-top:14px;flex-wrap:wrap}
+.ov-btn{background:var(--purple);color:#fff;border:none;border-radius:9px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:transform .15s ease,box-shadow .15s ease}
+.ov-btn:hover{transform:translateY(-1px);box-shadow:0 4px 14px color-mix(in srgb,var(--purple) 40%,transparent)}
+.ov-result{font-size:13.5px;font-weight:650;line-height:1.5;padding:10px 16px;border-radius:9px;background:color-mix(in srgb,var(--cyan) 12%,transparent);color:var(--text);display:none}
+.ov-result.show{display:block}
+.ov-result.no{background:color-mix(in srgb,var(--warn) 14%,transparent)}
+.ov-result .ov-range{font-family:Consolas,"Courier New",monospace;font-weight:700;color:var(--purple)}
+.ov-plan.wide{grid-column:1/-1}
+.ov-optional{font-size:10px;font-weight:600;letter-spacing:.2px;text-transform:none;color:var(--faint)}
+.ov-results{display:flex;flex-direction:column;gap:8px;flex:1;min-width:280px}
+.ov-result .ov-tag{font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:2px}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- process guide ---------- */
+.glossary{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.glossary li{padding:11px 13px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2)}
+.g-term{font-weight:650;font-size:12.5px;color:var(--brand);display:block}
+.g-def{margin-top:3px;font-size:12px;color:var(--muted);line-height:1.5;display:block}
+
+/* ---------- INS CD rules + BOB table ---------- */
+.rules{list-style:none;margin:0;padding:0;display:grid;gap:9px}
+.rules li{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.5}
+.rules .r-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--purple);margin-top:6px;flex:0 0 auto;
+}
+.rules li.warn .r-dot{background:var(--amber)}
+.code{
+  font-family:Consolas,"Courier New",monospace;font-size:12px;font-weight:700;color:var(--brand);
+  background:color-mix(in srgb,var(--brand) 10%,var(--surface-2));
+  border:1px solid color-mix(in srgb,var(--brand) 25%,var(--border));border-radius:5px;padding:1px 7px;
+}
+.bob-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:10px}
+.bob-table th{
+  text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);
+  font-weight:650;padding:6px 10px;border-bottom:1px solid var(--border);
+}
+.bob-table td{padding:6px 10px;border-bottom:1px solid var(--border)}
+.bob-table tbody tr:last-child td{border-bottom:0}
+.bob-table tbody tr:hover{background:var(--surface-2)}
+
+/* ---------- code lookup ---------- */
+.lookup-bar{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+.lookup-bar .lu-wrap{flex:1;display:flex;align-items:center;gap:9px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);padding:8px 13px}
+.lookup-bar .lu-wrap svg{color:var(--faint);flex:0 0 auto}
+.lookup-bar input{flex:1;border:0;background:none;color:var(--text);font:inherit;font-size:13px;outline:none}
+.lookup-count{font-size:11.5px;color:var(--faint);white-space:nowrap}
+.table-wrap{overflow:auto;border:1px solid var(--border);border-radius:var(--radius-sm)}
+table.data{width:100%;border-collapse:collapse;font-size:13px;min-width:440px}
+table.data th{
+  background:var(--surface-2);text-align:left;font-size:11px;text-transform:uppercase;
+  letter-spacing:.5px;color:var(--muted);font-weight:650;padding:9px 14px;
+  border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;
+}
+table.data td{padding:8px 14px;border-bottom:1px solid var(--border);overflow:hidden;text-overflow:ellipsis}
+table.data tbody tr:hover{background:var(--surface-2)}
+table.data tbody tr:last-child td{border-bottom:0}
+td.code-cell{font-family:Consolas,"Courier New",monospace;font-weight:700;color:var(--brand)}
+.rule-pill{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.3px;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.rule-pill.prohibited{background:color-mix(in srgb,var(--warn) 16%,transparent);color:var(--warn)}
+.rule-pill.call{background:color-mix(in srgb,var(--amber) 18%,transparent);color:var(--amber)}
+.rule-pill.secondary{background:color-mix(in srgb,var(--purple) 15%,transparent);color:var(--purple)}
+.rule-pill.standard{background:color-mix(in srgb,var(--cyan) 15%,transparent);color:var(--cyan)}
+
+/* ---------- mascot ---------- */
+.mascot-wrap{position:fixed;right:20px;bottom:16px;z-index:26;pointer-events:none}
+.mascot{
+  display:block;width:110px;height:auto;user-select:none;cursor:pointer;
+  pointer-events:auto;
+  filter:drop-shadow(0 6px 14px rgba(46,16,101,.28));
+  animation:mascotBob 4.5s ease-in-out infinite;
+}
+[data-theme="dark"] .mascot{filter:drop-shadow(0 6px 14px rgba(0,0,0,.55))}
+@keyframes mascotBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+
+.mascot-bubble{
+  position:absolute;right:6px;bottom:calc(100% + 10px);width:230px;pointer-events:auto;
+  background:var(--surface);border:1px solid var(--border);border-radius:14px 14px 4px 14px;
+  padding:11px 13px;box-shadow:var(--shadow-hover);font-size:12.5px;line-height:1.45;
+  animation:pop .3s cubic-bezier(.2,.7,.3,1) .8s backwards;
+}
+.mascot-bubble::after{
+  content:"";position:absolute;right:14px;bottom:-7px;width:14px;height:14px;
+  background:var(--surface);border-right:1px solid var(--border);border-bottom:1px solid var(--border);
+  transform:rotate(45deg);
+}
+.mascot-bubble b{color:var(--brand)}
+.mb-x{
+  position:absolute;top:5px;right:5px;border:0;background:none;color:var(--faint);
+  font-size:11px;cursor:pointer;padding:3px 6px;border-radius:5px;
+}
+.mb-x:hover{background:var(--surface-2);color:var(--text)}
+.mb-cta{
+  margin-top:9px;border:0;border-radius:8px;padding:6px 13px;cursor:pointer;
+  background:var(--brand);color:var(--on-brand);font-size:12px;font-weight:600;
+  transition:background .15s,transform .1s;
+}
+.mb-cta:hover{background:var(--brand-hover)}
+.mb-cta:active{transform:scale(.96)}
+
+.mascot-pop{
+  position:absolute;right:0;bottom:calc(100% + 10px);width:300px;max-width:86vw;pointer-events:auto;
+  display:flex;flex-direction:column;height:390px;max-height:70vh;
+  background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  box-shadow:var(--shadow-hover);overflow:hidden;
+  animation:pop .2s cubic-bezier(.2,.7,.3,1) backwards;
+}
+@keyframes pop{from{opacity:0;transform:translateY(-6px) scale(.98)}to{opacity:1;transform:none}}
+.mp-head{
+  display:flex;align-items:center;gap:9px;padding:11px 14px;
+  border-bottom:1px solid var(--border);
+  background:linear-gradient(90deg,color-mix(in srgb,var(--brand) 10%,var(--surface)),var(--surface));
+}
+.mp-head .mp-av{
+  width:30px;height:30px;border-radius:50%;background:#fff;
+  display:grid;place-items:center;box-shadow:inset 0 0 0 1px var(--border);flex:0 0 auto;
+}
+.mp-head .mp-av img{width:24px;height:24px;object-fit:contain}
+.mp-head b{font-size:13.5px;display:block;line-height:1.2}
+.mp-status{font-size:10.5px;color:var(--muted);display:inline-flex;align-items:center;gap:5px}
+.mp-status i{width:7px;height:7px;border-radius:50%;background:var(--cyan)}
+.mp-head button{margin-left:auto;border:0;background:none;color:var(--muted);font-size:14px;cursor:pointer;padding:4px 8px;border-radius:6px}
+.mp-head button:hover{background:var(--surface-2);color:var(--text)}
+.mp-body{flex:1;overflow-y:auto;padding:13px;display:flex;flex-direction:column;gap:8px}
+.mp-msg{
+  max-width:85%;padding:8px 12px;border-radius:14px 14px 14px 4px;
+  background:var(--surface-2);font-size:12.5px;line-height:1.45;align-self:flex-start;
+}
+.mp-msg.user{
+  align-self:flex-end;border-radius:14px 14px 4px 14px;
+  background:var(--brand);color:var(--on-brand);
+}
+.mp-input{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--border)}
+.mp-input input{
+  flex:1;border:1px solid var(--border);border-radius:999px;background:var(--surface-2);
+  color:var(--text);font:inherit;font-size:12.5px;padding:7px 13px;outline:none;
+}
+.mp-input input:focus{border-color:var(--brand)}
+.mp-input button{
+  width:34px;height:34px;border:0;border-radius:50%;cursor:pointer;flex:0 0 auto;
+  background:var(--brand);color:var(--on-brand);display:grid;place-items:center;
+  transition:background .15s,transform .1s;
+}
+.mp-input button:hover{background:var(--brand-hover)}
+.mp-input button:active{transform:scale(.92)}
+
+/* ---------- footer ---------- */
+footer{max-width:1360px;margin:0 auto;padding:0 20px 40px;color:var(--faint);font-size:12px;line-height:1.6;text-align:center}
+
+@media (max-width:960px){
+  .glossary{grid-template-columns:1fr}
+  .page-title{font-size:19px}
+  body{padding-left:0}
+  .sidebar{transform:translateX(-105%);transition:transform .25s cubic-bezier(.2,.7,.3,1);box-shadow:var(--shadow-hover)}
+  .sidebar.open{transform:none}
+  .side-scrim.show{display:block}
+  .side-toggle{display:inline-flex}
+  .mascot-wrap{right:14px;bottom:16px}
+  .mascot-wrap .mascot{width:70px}
+  .mascot-bubble{width:200px;font-size:12px}
+  .mascot-pop{width:270px;height:360px}
+}
+@media (max-width:640px){
+  .header-actions .chip{display:none}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<header class="app-header">
+  <button class="btn btn-icon side-toggle" id="sideToggle" aria-label="Open navigation" title="Menu">
+    <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
+  </button>
+  <span class="header-page">Process Guide</span>
+  <div class="header-actions">
+  </div>
+</header>
+
+<div class="side-scrim" id="sideScrim"></div>
+<nav class="sidebar" id="sidebar" aria-label="Main navigation">
+  <a class="side-brand" href="ecob-insights.html">
+    <img class="brand-mark" src="eCOBIcon.png" alt="eCOB logo" width="38" height="38">
+    <span class="brand-text">
+      <span class="brand-name">eCOB Bridge Hub</span>
+      <span class="brand-tag">Right Coverage. Right Order.</span>
+    </span>
+  </a>
+  <div class="side-section">Menu</div>
+  <a class="side-link" href="ecob-insights.html">
+    <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="5" height="5" rx="1.2"/><rect x="9" y="2" width="5" height="5" rx="1.2"/><rect x="2" y="9" width="5" height="5" rx="1.2"/><rect x="9" y="9" width="5" height="5" rx="1.2"/></svg>
+    Dashboard
+  </a>
+  <a class="side-link active" href="process-guide.html" aria-current="page">
+    <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 3.5A1.5 1.5 0 0 1 4 2h9.5v11H4a1.5 1.5 0 0 0-1.5 1.5Z"/><path d="M2.5 14.5A1.5 1.5 0 0 1 4 13h9.5"/><path d="M6 5.5h4.5M6 8h4.5"/></svg>
+    Process Guide
+  </a>
+  <a class="side-link" href="admin.html">
+    <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="5" r="2.5"/><path d="M3 13.5c0-2.5 2.2-4 5-4s5 1.5 5 4"/></svg>
+    Admin
+  </a>
+  <div class="side-foot">
+    <button class="btn btn-icon" id="themeToggle" aria-label="Toggle dark mode" title="Toggle theme">
+      <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor"><path d="M13.5 10.5A6 6 0 0 1 5.5 2.5 6 6 0 1 0 13.5 10.5Z"/></svg>
+    </button>
+    <span class="foot-text">Appearance<small id="themeState">Dark</small></span>
+  </div>
+</nav>
+
+<main id="main" tabindex="-1">
+  <div class="page-head">
+    <div>
+      <h1 class="page-title">Process Guide</h1>
+      <p class="page-sub">A quick guide for Standard Operating Procedures.</p>
+    </div>
+  </div>
+
+  <section class="card" style="margin-bottom:22px" id="cardOverlap" aria-label="Overlapping date calculator">
+    <h2 class="card-title">Overlapping Date Calculator</h2>
+    <p class="card-sub">Enter the Anthem (main) span plus up to two other-insurance policies — Overlap 1 = Anthem × Other Insurance 1, Overlap 2 = Other Insurance 1 × 2. A blank end date means still active — counted through today.</p>
+    <div class="ov-grid">
+      <div class="ov-plan">
+        <h4>Anthem (Main)</h4>
+        <div class="ov-fields">
+          <div class="ov-field"><label for="ovAnthemEff">Effective Date</label><input type="date" id="ovAnthemEff"></div>
+          <div class="ov-field"><label for="ovAnthemEnd">End Date</label><input type="date" id="ovAnthemEnd"></div>
+        </div>
+      </div>
+      <div class="ov-plan">
+        <h4>Other Insurance 1</h4>
+        <div class="ov-fields">
+          <div class="ov-field"><label for="ovOtherEff">Effective Date</label><input type="date" id="ovOtherEff"></div>
+          <div class="ov-field"><label for="ovOtherEnd">End Date</label><input type="date" id="ovOtherEnd"></div>
+        </div>
+      </div>
+      <div class="ov-plan wide">
+        <h4>Other Insurance 2 <span class="ov-optional">(optional)</span></h4>
+        <div class="ov-fields">
+          <div class="ov-field"><label for="ovOther2Eff">Effective Date</label><input type="date" id="ovOther2Eff"></div>
+          <div class="ov-field"><label for="ovOther2End">End Date</label><input type="date" id="ovOther2End"></div>
+        </div>
+      </div>
+    </div>
+    <div class="ov-actions">
+      <button class="ov-btn" id="ovCalc" type="button">Calculate Overlap</button>
+      <div class="ov-results">
+        <div class="ov-result" id="ovResult" role="status"></div>
+        <div class="ov-result" id="ovResult2" role="status"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" style="margin-bottom:22px" aria-label="Updating the INS CD field">
+    <h2 class="card-title">Updating the <span class="code">INS CD</span> Field — WGS COB LL</h2>
+    <p class="card-sub">From the WGS COB LL NAIC Insurance Codes QRG (rev. 09/09/2025) — how specialists populate the Insurance Code on COB Limited Liability records.</p>
+    <ul class="rules">
+      <li><span class="r-dot"></span><span>Find the insurer in the <b>Insurance Code Lookup</b> below, then copy its <b>five-character NAIC-compliant code</b> into the <span class="code">INS CD</span> field on the COB LL record.</span></li>
+      <li><span class="r-dot"></span><span><b>Blue on Blue (BOB):</b> use the system-specific codes from the table — not the standard NAIC list.</span></li>
+      <li class="warn"><span class="r-dot"></span><span><b>Not on the list?</b> Enter <span class="code">QCR</span> and type the Insurance Company name in the respective field.</span></li>
+      <li class="warn"><span class="r-dot"></span><span><b>Exception:</b> CS90 Kernel groups always use <span class="code">U07521</span> — never <span class="code">QCR</span>.</span></li>
+    </ul>
+    <table class="bob-table">
+      <thead><tr><th>BOB Scenario</th><th>INS CD</th></tr></thead>
+      <tbody>
+        <tr><td>CS90 legacy</td><td class="code-cell">ESB803</td></tr>
+        <tr><td>STAR</td><td class="code-cell">A62825</td></tr>
+        <tr><td>WGS (non-Kernel)</td><td class="code-cell">A62825</td></tr>
+        <tr><td>NASCO</td><td class="code-cell">A12624</td></tr>
+        <tr><td>Central Region Facets</td><td class="code-cell">A95120</td></tr>
+        <tr><td>CHIPS</td><td class="code-cell">A71835</td></tr>
+        <tr><td>ACES</td><td class="code-cell">E84105</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="card" style="margin-bottom:22px" id="cardStates" aria-label="State COB guidelines">
+    <h2 class="card-title">State COB Guidelines — Individual Plans</h2>
+    <p class="card-sub">From the Individual Plans State COB Guidelines – CB QRG (rev. 02/10/2026) — coordinating benefits between Anthem-branded individual plans and group coverage, state by state.</p>
+    <ul class="rules">
+      <li><span class="r-dot"></span><span>Use alongside the <b>Individual Plan Guidelines – CB</b> when coordinating benefits with Elevance Health/Anthem individual plans.</span></li>
+      <li><span class="r-dot"></span><span><b>Court orders supersede state laws</b> when determining primacy.</span></li>
+      <li><span class="r-dot"></span><span><b>COB prohibited</b> states: pay the individual plan as if there is no other coverage.</span></li>
+      <li><span class="r-dot"></span><span><b>No state regs:</b> call to question the COB clause in the <b>EOC</b> before applying NAIC guidelines.</span></li>
+      <li class="warn"><span class="r-dot"></span><span><b>Exception:</b> state mandates do not extend to self-funded <b>ASO</b> accounts unless exempt from <b>ERISA</b> (government/religious groups) — consult the EOC for ASO ERISA cases.</span></li>
+    </ul>
+    <div class="lookup-bar" style="margin-top:14px">
+      <div class="lu-wrap">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3" stroke-linecap="round"/></svg>
+        <input id="stateSearch" type="text" placeholder="Filter by state, rule, or citation…" autocomplete="off" aria-label="Filter state COB guidelines">
+      </div>
+      <span class="lookup-count" id="stateCount"></span>
+    </div>
+    <div class="table-wrap" style="max-height:400px">
+      <table class="data" id="stateTable"></table>
+    </div>
+  </section>
+
+  <section class="card" style="margin-bottom:22px" id="cardOad" aria-label="OAD primacy rules">
+    <h2 class="card-title">Overage Dependent (OAD) Primacy Rules</h2>
+    <p class="card-sub">From the OAD Primacy Rules – CB QRG (rev. 04/23/2026) — which plan pays first when an overage dependent has multiple coverages.</p>
+    <ul class="rules">
+      <li><span class="r-dot"></span><span>Order of precedence: <b>court order → active/inactive → birthday rule / longer-shorter rule</b>, depending on the scenario.</span></li>
+      <li><span class="r-dot"></span><span>Do <b>not</b> flip an existing primary record to secondary for the entire span — it impacts claims.</span></li>
+      <li><span class="r-dot"></span><span>When a COB letter is required, refer to <b>“Determine Which Letter to Send a Dependent – CB”</b>.</span></li>
+      <li class="warn"><span class="r-dot"></span><span><b>Aetna OADs</b> use their own hierarchy — see the Aetna section below.</span></li>
+      <li class="warn"><span class="r-dot"></span><span>Age of emancipation varies by state — check the <b>NCSL Age of Majority</b> site.</span></li>
+    </ul>
+    <div class="table-wrap" style="margin-top:14px;max-height:400px">
+      <table class="data" id="oadTable"></table>
+    </div>
+    <h3 class="sub-title">Coordinating with Aetna — OAD hierarchy</h3>
+    <p class="card-sub" style="margin-bottom:10px">Aetna does <b>not</b> follow the Anthem hierarchy. For OADs (up to age 26) of divorced, separated, or never-married parents living apart, Aetna applies this strict order:</p>
+    <div class="table-wrap">
+      <table class="data" id="aetnaTable"></table>
+    </div>
+    <div class="tip-line">These guidelines apply <b>only to Aetna</b> — for other carriers see below or use the standard OAD Primacy Rules.</div>
+
+    <h3 class="sub-title">Coordinating with UHC &amp; Kaiser Permanente</h3>
+    <p class="card-sub" style="margin-bottom:10px">UHC (rev. 08/13/2026) and Kaiser Permanente (rev. 06/26/2026) each diverge from the Anthem rule when an OAD is covered by divorced natural parents:</p>
+    <div class="table-wrap">
+      <table class="data" id="carrierTable"></table>
+    </div>
+  </section>
+
+  <section class="card" style="margin-bottom:22px" id="cardLetters" aria-label="Dependent and OAD letters">
+    <h2 class="card-title">Dependent &amp; OAD Letters — FUSE</h2>
+    <p class="card-sub">From “Determine Which Letter to Send a Dependent – CB” (rev. 08/04/2026) — which COB letter to send, and when.</p>
+    <ul class="rules">
+      <li><span class="r-dot"></span><span>Letters are sent when <b>additional information</b> is needed to determine primacy.</span></li>
+      <li><span class="r-dot"></span><span>Age of majority varies by state — check the <b>NCSL Age of Majority</b> list for the dependent's state of residence.</span></li>
+      <li><span class="r-dot"></span><span>As of 06/30/2025: no court decree + determinable parental relationship → use the birthday rule (or NAIC COB rules), send a <b>divorce letter</b>, and close the case.</span></li>
+      <li class="warn"><span class="r-dot"></span><span><b>Divorce letter only when:</b> relationship is unclear, the member mentioned a court decree, or OHI details are needed and resources are exhausted.</span></li>
+      <li class="warn"><span class="r-dot"></span><span>24 months = recovery lookback period, reviewed case-by-case — ask your <b>OE</b> (Operations Expert) when unclear.</span></li>
+    </ul>
+    <div class="table-wrap" style="margin-top:14px">
+      <table class="data" id="letterTable"></table>
+    </div>
+  </section>
+
+  <section class="card" style="margin-bottom:22px" aria-label="Insurance code lookup">
+    <h2 class="card-title">Insurance Code Lookup</h2>
+    <p class="card-sub">7,309 NAIC insurance codes — type a company name or code to filter.</p>
+    <div class="lookup-bar">
+      <div class="lu-wrap">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3" stroke-linecap="round"/></svg>
+        <input id="naicSearch" type="text" placeholder="Search company name or code…" autocomplete="off" aria-label="Search insurance companies">
+      </div>
+      <span class="lookup-count" id="naicCount"></span>
+    </div>
+    <div class="table-wrap" style="max-height:380px">
+      <table class="data" id="naicTable"></table>
+    </div>
+  </section>
+
+  <section class="card" aria-label="Glossary">
+    <h2 class="card-title">Quick Glossary</h2>
+    <p class="card-sub">Terms you’ll see in the queue every day.</p>
+    <ul class="glossary">
+      <li><span class="g-term">COB</span><span class="g-def">Coordination of Benefits — deciding which plan pays first when a member has more than one.</span></li>
+      <li><span class="g-term">eCOB</span><span class="g-def">Electronic Coordination of Benefits — COB handled through automated data exchanges and work queues.</span></li>
+      <li><span class="g-term">Primacy</span><span class="g-def">Which payer is primary (pays first) vs. secondary for a given claim.</span></li>
+      <li><span class="g-term">TPL</span><span class="g-def">Third-Party Liability — another party (often another insurer) that should pay before we do.</span></li>
+      <li><span class="g-term">SME</span><span class="g-def">Subject-Matter Expert — your first escalation for tricky cases.</span></li>
+      <li><span class="g-term">Watch zone</span><span class="g-def">A metric within 2 points of its goal — on track, but keep an eye on it.</span></li>
+      <li><span class="g-term">NAIC</span><span class="g-def">National Association of Insurance Commissioners — issues the five-character insurance codes used in INS CD.</span></li>
+      <li><span class="g-term">INS CD</span><span class="g-def">Insurance Code field on the COB Limited Liability record in WGS — always a 5-char NAIC code.</span></li>
+      <li><span class="g-term">COB LL</span><span class="g-def">COB Limited Liability — the WGS record type that carries the other-coverage insurance code.</span></li>
+      <li><span class="g-term">BOB</span><span class="g-def">Blue on Blue — the member is covered by two Blue plans; uses system-specific INS CD values, not the NAIC list.</span></li>
+      <li><span class="g-term">QCR</span><span class="g-def">Fallback INS CD when an insurer isn't on the NAIC list — enter QCR and type the company name.</span></li>
+      <li><span class="g-term">CS90 Kernel</span><span class="g-def">Legacy group platform — its records always take INS CD U07521 instead of QCR.</span></li>
+      <li><span class="g-term">ASO</span><span class="g-def">Administrative Services Only — a self-funded employer account; state COB mandates usually don't apply unless the group is ERISA-exempt.</span></li>
+      <li><span class="g-term">ERISA</span><span class="g-def">Employee Retirement Income Security Act — federal law for group plans; exempt groups (government, religious) may still follow state mandates.</span></li>
+      <li><span class="g-term">EOC</span><span class="g-def">Evidence of Coverage — the policy document that states whether a plan coordinates benefits and how primacy is set.</span></li>
+      <li><span class="g-term">OIC</span><span class="g-def">Other Insurance Carrier — the member's additional coverage, identified during COB investigation to determine primacy.</span></li>
+      <li><span class="g-term">QRG</span><span class="g-def">Quick Reference Guide — the source documents behind this page.</span></li>
+      <li><span class="g-term">OAD</span><span class="g-def">Overage Dependent — a dependent past the standard age limit; special primacy rules apply.</span></li>
+      <li><span class="g-term">Birthday rule</span><span class="g-def">The plan of the parent whose birthday falls earlier in the year is primary.</span></li>
+      <li><span class="g-term">Longer/shorter rule</span><span class="g-def">The plan effective longer is primary — for OADs, compare the dependent's effective dates.</span></li>
+      <li><span class="g-term">Active/inactive rule</span><span class="g-def">An active plan beats a retiree/COBRA (inactive) plan — applied before other rules except court orders.</span></li>
+      <li><span class="g-term">COBRA</span><span class="g-def">Federal continuation coverage; counts as an inactive plan for primacy.</span></li>
+      <li><span class="g-term">Governance</span><span class="g-def">Team that resolves unclear primacy cases (e.g., EFF date equals hire date).</span></li>
+      <li><span class="g-term">Residency/Custodial rule</span><span class="g-def">Aetna OAD rule — primacy follows where the dependent lives; compare the address on both carriers.</span></li>
+      <li><span class="g-term">Aetna OAD hierarchy</span><span class="g-def">Aetna's strict order: Court Order → Residency/Custodial → Birthday → Longer/Shorter.</span></li>
+      <li><span class="g-term">FUSE</span><span class="g-def">The system used to generate and send COB letters to dependents.</span></li>
+      <li><span class="g-term">OHI</span><span class="g-def">Other Health Insurance — additional coverage info that may determine primacy.</span></li>
+      <li><span class="g-term">OE</span><span class="g-def">Operations Expert — escalation contact for things like the 24-month lookback period.</span></li>
+      <li><span class="g-term">Divorce letter</span><span class="g-def">Sent only when the relationship is unclear, a court decree was mentioned, or resources are exhausted.</span></li>
+      <li><span class="g-term">Commercial COB letter</span><span class="g-def">Sent to an OAD when additional details are required to determine primacy.</span></li>
+      <li><span class="g-term">General information letter</span><span class="g-def">Sent to a dependent when plans match but more information is needed.</span></li>
+      <li><span class="g-term">Lookback period</span><span class="g-def">The 24-month recovery window reviewed case-by-case for OAD primacy — ask an OE when unclear.</span></li>
+      <li><span class="g-term">Overlap period</span><span class="g-def">The date range where Anthem coverage and the other insurance are both active — use the calculator above.</span></li>
+      <li><span class="g-term">EFF date</span><span class="g-def">Effective date — when coverage started; compared with hire date in unclear primacy cases.</span></li>
+      <li><span class="g-term">UHC</span><span class="g-def">United Healthcare — for OADs, court order while in effect, else longer/shorter rule (UHC only, not the umbrella).</span></li>
+      <li><span class="g-term">Kaiser Permanente</span><span class="g-def">Uses the birthday rule for all OAD coordination; longer/shorter only when plans share a subscriber.</span></li>
+    </ul>
+  </section>
+</main>
+
+<footer>
+  A Process Improvement Initiative of Asst. Mgr. <b>Erwin Esloyo</b> &amp; Asst. Mgr. <b>Kenneth So</b>&nbsp;|&nbsp;Developer: <b>Brix Badar</b> — eCOB Specialist<br>
+  <span style="font-weight:600;color:var(--muted)">Payment Integrity Enterprise Coordination of Benefits</span>
+</footer>
+
+<div class="mascot-wrap">
+  <div class="mascot-pop" id="mascotPop" role="dialog" aria-label="eCOB-i assistant" hidden>
+    <div class="mp-head">
+      <span class="mp-av"><img src="eCOBIcon.png" alt=""></span>
+      <div><b>eCOB-i</b><span class="mp-status"><i></i>Online</span></div>
+      <button id="mpClose" aria-label="Close assistant">✕</button>
+    </div>
+    <div class="mp-body" id="mpBody">
+      <div class="mp-msg">Hi, I am <b>eCOB-i</b>. How can I assist you?</div>
+    </div>
+    <div class="mp-input">
+      <input id="mpInput" type="text" placeholder="Type a message…" autocomplete="off" aria-label="Message eCOB-i">
+      <button id="mpSend" aria-label="Send message">
+        <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor"><path d="M1.7 1.9a.6.6 0 0 1 .66-.13l12 6a.6.6 0 0 1 0 1.1l-12 6A.6.6 0 0 1 1.6 14l1.5-5.4 7-.6-7-.6L1.6 2a.6.6 0 0 1 .1-.1Z"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="mascot-bubble" id="mascotBubble">
+    <button class="mb-x" id="bubbleDismiss" aria-label="Dismiss message">✕</button>
+    <span>Hi, I am <b>eCOB-i</b>. Need help with the process?</span>
+    <button class="mb-cta" id="mascotCta">Chat with me</button>
+  </div>
+  <img class="mascot" id="mascotImg" src="eCOB-i.gif" alt="eCOB-i mascot" role="button" tabindex="0" aria-label="Open eCOB-i assistant">
+</div>
+
+<script src="ecob-data.js"></script>
+<script>
+(function () {
+'use strict';
+var $ = function (s) { return document.querySelector(s); };
+var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+
+/* ---------- theme ---------- */
+function syncThemeState() {
+  var el = $('#themeState');
+  if (el) el.textContent = document.documentElement.getAttribute('data-theme') === 'light' ? 'Light' : 'Dark';
+}
+$('#themeToggle').addEventListener('click', function () {
+  var cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', cur);
+  localStorage.setItem('ecob-theme', cur);
+  syncThemeState();
+});
+syncThemeState();
+
+/* ---------- sidebar (mobile drawer) ---------- */
+var sidebar = $('#sidebar'), sideScrim = $('#sideScrim');
+function closeSidebar() { sidebar.classList.remove('open'); sideScrim.classList.remove('show'); }
+$('#sideToggle').addEventListener('click', function () {
+  sidebar.classList.toggle('open');
+  sideScrim.classList.toggle('show', sidebar.classList.contains('open'));
+});
+sideScrim.addEventListener('click', closeSidebar);
+
+/* ---------- entrance stagger ---------- */
+(function () {
+  var cards = document.querySelectorAll('main .card');
+  for (var i = 0; i < cards.length; i++) cards[i].style.setProperty('--d', Math.min(i * 0.06, 0.45) + 's');
+})();
+
+/* ---------- mascot assistant ---------- */
+var mascotPop = $('#mascotPop'), mascotBubble = $('#mascotBubble');
+var mpBody = $('#mpBody'), mpInput = $('#mpInput');
+
+function toggleMascotPop(show) {
+  mascotPop.hidden = show != null ? !show : !mascotPop.hidden;
+  if (!mascotPop.hidden) { mascotBubble.hidden = true; setTimeout(function () { mpInput.focus(); }, 60); }
+}
+$('#mascotCta').addEventListener('click', function () { toggleMascotPop(true); });
+$('#bubbleDismiss').addEventListener('click', function () { mascotBubble.hidden = true; });
+$('#mpClose').addEventListener('click', function () { toggleMascotPop(false); });
+$('#mascotImg').addEventListener('click', function () { toggleMascotPop(); });
+$('#mascotImg').addEventListener('keydown', function (e) {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleMascotPop(); }
+});
+document.addEventListener('click', function (e) {
+  if (!mascotPop.hidden && !e.target.closest('.mascot-wrap')) toggleMascotPop(false);
+});
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') { if (!mascotPop.hidden) toggleMascotPop(false); closeSidebar(); }
+});
+
+function ecoReply(q) {
+  return ECOB.reply(q, {
+    page: 'guide',
+    act: {
+      theme: function () { $('#themeToggle').click(); },
+      go: function (pg) { location.href = pg === 'guide' ? 'process-guide.html' : 'ecob-insights.html'; },
+      flash: function (sel) {
+        toggleMascotPop(false);
+        var el = document.querySelector(sel);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  });
+}
+
+function sendMascotMsg() {
+  var q = mpInput.value.trim();
+  if (!q) return;
+  mpBody.insertAdjacentHTML('beforeend', '<div class="mp-msg user">' + esc(q) + '</div>');
+  mpInput.value = '';
+  mpBody.scrollTop = mpBody.scrollHeight;
+  setTimeout(function () {
+    mpBody.insertAdjacentHTML('beforeend', '<div class="mp-msg">' + ecoReply(q) + '</div>');
+    mpBody.scrollTop = mpBody.scrollHeight;
+  }, 450);
+}
+$('#mpSend').addEventListener('click', sendMascotMsg);
+mpInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') sendMascotMsg(); });
+
+/* ---------- NAIC code lookup ---------- */
+var NAIC_ROWS = ECOB.NAIC_ROWS;
+var naicInput = $('#naicSearch'), naicTable = $('#naicTable'), naicCount = $('#naicCount');
+
+function drawNaic() {
+  var q = naicInput.value.trim().toLowerCase();
+  var hits = q
+    ? NAIC_ROWS.filter(function (r) { return r.n.toLowerCase().indexOf(q) > -1 || r.c.toLowerCase().indexOf(q) > -1; })
+    : NAIC_ROWS;
+  var show = hits.slice(0, 60);
+  naicCount.textContent = hits.length.toLocaleString('en-US') + ' of ' + NAIC_ROWS.length.toLocaleString('en-US') + (hits.length > 60 ? ' — showing first 60' : '');
+  naicTable.innerHTML = '<thead><tr><th>Insurance Company</th><th>INS CD</th><th>State</th></tr></thead><tbody>' +
+    (show.length
+      ? show.map(function (r) {
+          return '<tr><td>' + esc(r.n) + '</td><td class="code-cell">' + esc(r.c) + '</td><td>' + esc(r.s) + '</td></tr>';
+        }).join('')
+      : '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:18px">No matches — enter <b>QCR</b> and type the company name instead.</td></tr>') +
+    '</tbody>';
+}
+naicInput.addEventListener('input', drawNaic);
+drawNaic();
+
+/* ---------- State COB guidelines ---------- */
+var STATE_ROWS = ECOB.STATE_ROWS;
+var stateInput = $('#stateSearch'), stateTable = $('#stateTable'), stateCount = $('#stateCount');
+
+function rulePill(r) {
+  var k = ECOB.stateKind(r);
+  var cls = k.indexOf('PROHIBITED') > -1 ? 'prohibited' : k.indexOf('CALL') > -1 ? 'call' : k.indexOf('SECONDARY') > -1 ? 'secondary' : 'standard';
+  return '<span class="rule-pill ' + cls + '">' + k + '</span>';
+}
+
+function drawStates() {
+  var q = stateInput.value.trim().toLowerCase();
+  var hits = q
+    ? STATE_ROWS.filter(function (r) {
+        return (r.name + ' ' + r.st + ' ' + r.desc + ' ' + r.pri + ' ' + r.src).toLowerCase().indexOf(q) > -1;
+      })
+    : STATE_ROWS;
+  stateCount.textContent = hits.length + ' of ' + STATE_ROWS.length;
+  stateTable.innerHTML = '<thead><tr><th>State</th><th>ST</th><th>Rule</th><th>State Law</th><th>Primacy</th><th>Source</th></tr></thead><tbody>' +
+    (hits.length
+      ? hits.map(function (r) {
+          return '<tr><td style="white-space:nowrap;font-weight:600">' + esc(r.name) + '</td><td class="code-cell">' + esc(r.st) + '</td><td>' + rulePill(r) + '</td><td style="font-size:12px;line-height:1.45">' + esc(r.desc) + '</td><td style="font-size:12px;line-height:1.45">' + esc(r.pri) + '</td><td style="font-size:12px;white-space:nowrap">' + esc(r.src) + '</td></tr>';
+        }).join('')
+      : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:18px">No matching states.</td></tr>') +
+    '</tbody>';
+}
+stateInput.addEventListener('input', drawStates);
+drawStates();
+
+/* ---------- OAD primacy rules ---------- */
+var OAD_ROWS = ECOB.OAD_ROWS || [];
+$('#oadTable').innerHTML = '<thead><tr><th style="width:280px">Scenario</th><th>Rule</th></tr></thead><tbody>' +
+  OAD_ROWS.map(function (r) {
+    return '<tr><td style="font-weight:600;line-height:1.45">' + esc(r.scenario) + '</td><td style="font-size:12px;line-height:1.5">' + esc(r.rule) + '</td></tr>';
+  }).join('') + '</tbody>';
+$('#aetnaTable').innerHTML = '<thead><tr><th style="width:32px">#</th><th style="width:180px">Rule</th><th>How Aetna applies it</th></tr></thead><tbody>' +
+  (ECOB.AETNA_ROWS || []).map(function (r) {
+    return '<tr><td class="code-cell">' + esc(r.order) + '</td><td style="font-weight:600;white-space:nowrap">' + esc(r.name) + '</td><td style="font-size:12px;line-height:1.5">' + esc(r.rule) + '</td></tr>';
+  }).join('') + '</tbody>';
+$('#carrierTable').innerHTML = '<thead><tr><th style="width:170px">Carrier</th><th>OAD rule</th><th style="width:260px">Notes</th></tr></thead><tbody>' +
+  (ECOB.CARRIER_ROWS || []).map(function (r) {
+    return '<tr><td style="font-weight:600">' + esc(r.carrier) + '</td><td style="font-size:12px;line-height:1.5">' + esc(r.rule) + '</td><td style="font-size:12px;line-height:1.5;color:var(--muted)">' + esc(r.notes) + '</td></tr>';
+  }).join('') + '</tbody>';
+
+/* ---------- Dependent/OAD letter matrix ---------- */
+$('#letterTable').innerHTML = '<thead><tr><th style="width:96px">Group</th><th>If…</th><th>And…</th><th style="width:300px">Then…</th></tr></thead><tbody>' +
+  (ECOB.LETTER_ROWS || []).map(function (r) {
+    return '<tr><td style="font-weight:600;white-space:nowrap">' + esc(r.grp) + '</td><td style="font-size:12px;line-height:1.45">' + esc(r.if) + '</td><td style="font-size:12px;line-height:1.45">' + esc(r.and) + '</td><td style="font-size:12px;line-height:1.45;font-weight:600">' + esc(r.then) + '</td></tr>';
+  }).join('') + '</tbody>';
+
+/* ---------- Overlapping Date Calculator ---------- */
+function ovParse(id) {
+  var v = $(id).value;
+  if (!v) return null;
+  var p = v.split('-');
+  return new Date(+p[0], +p[1] - 1, +p[2]);
+}
+function ovFmt(d) {
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+function ovDur(s, e) {
+  var days = Math.round((e - s) / 864e5) + 1;
+  if (days < 1) return '';
+  var mos = Math.floor(days / 30.44), rem = Math.round(days - mos * 30.44);
+  return mos >= 1 ? mos + ' mo ' + rem + ' d' : days + ' days';
+}
+var OV_TODAY = new Date(); OV_TODAY.setHours(0, 0, 0, 0);
+function ovRange(aS, aE, oS, oE) {
+  var s = aS > oS ? aS : oS;                          /* overlap starts at the later eff date */
+  var eA = aE || OV_TODAY, eO = oE || OV_TODAY;       /* blank end = still active → today */
+  var e = eA < eO ? eA : eO;                          /* ends at the earliest end date */
+  var viaToday = (eA === OV_TODAY || eO === OV_TODAY) && !(aE && oE);
+  return { s: s, e: e, ok: s <= e, viaToday: viaToday };
+}
+function ovShow(res, tag, aS, aE, oS, oE) {
+  res.className = 'ov-result show';
+  if (aE && aE < aS || oE && oE < oS) { res.innerHTML = tag + 'An end date can’t be before its effective date.'; res.classList.add('no'); return; }
+  var r = ovRange(aS, aE, oS, oE);
+  if (!r.ok) {
+    res.innerHTML = tag + '<b>No overlap.</b> The spans never touch (' + ovFmt(aS) + '–' + (aE ? ovFmt(aE) : 'open') + ' vs ' + ovFmt(oS) + '–' + (oE ? ovFmt(oE) : 'open') + ').';
+    res.classList.add('no');
+    return;
+  }
+  res.innerHTML = r.viaToday
+    ? tag + 'Overlap: <span class="ov-range">' + ovFmt(r.s) + ' – ' + ovFmt(r.e) + '</span> (' + ovDur(r.s, r.e) + ') — <b>still active</b>, blank end counted through today.'
+    : tag + 'Overlap: <span class="ov-range">' + ovFmt(r.s) + ' – ' + ovFmt(r.e) + '</span> (' + ovDur(r.s, r.e) + ').';
+}
+function ovCalc() {
+  var aS = ovParse('#ovAnthemEff'), aE = ovParse('#ovAnthemEnd');
+  var oS = ovParse('#ovOtherEff'), oE = ovParse('#ovOtherEnd');
+  var o2S = ovParse('#ovOther2Eff'), o2E = ovParse('#ovOther2End');
+  var res = $('#ovResult'), res2 = $('#ovResult2');
+  var tag1 = '<span class="ov-tag">Anthem × Other Insurance 1</span>', tag2 = '<span class="ov-tag">Other Insurance 1 × 2</span>';
+  res.className = 'ov-result show';
+  if (!aS || !oS) { res.textContent = 'Enter the Anthem effective date and at least one other-insurance effective date.'; res.classList.add('no'); res2.className = 'ov-result'; return; }
+  ovShow(res, tag1, aS, aE, oS, oE);
+  if (o2S) ovShow(res2, tag2, oS, oE, o2S, o2E);   /* overlap 2 = OI1 ∩ OI2 */
+  else res2.className = 'ov-result';
+}
+$('#ovCalc').addEventListener('click', ovCalc);
+['#ovAnthemEff', '#ovAnthemEnd', '#ovOtherEff', '#ovOtherEnd', '#ovOther2Eff', '#ovOther2End'].forEach(function (sel) {
+  $(sel).addEventListener('change', function () {
+    if ($('#ovResult').classList.contains('show')) ovCalc();
+  });
+});
+
+/* ---------- index every rendered element into the eCOB-i knowledge base ---------- */
+ECOB.indexDom(document);
+})();
+</script>
+</body>
+</html>

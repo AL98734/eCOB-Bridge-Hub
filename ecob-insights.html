@@ -1,0 +1,1194 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="eCOB Bridge Hub — year-to-date productivity, quality, attendance and production count. Self-contained: data lives inside this file.">
+<title>eCOB Bridge Hub</title>
+<script>
+  (function () {
+    var t = localStorage.getItem('ecob-theme');
+    if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+<style>
+:root{
+  --bg:#f7f6fc; --surface:#ffffff; --surface-2:#f2f0fa; --border:#e6e3f0;
+  --text:#1b1d21; --muted:#5c6370; --faint:#8a919e;
+  --brand:#5c00bd; --brand-hover:#4a009c; --on-brand:#ffffff;
+  --shadow:0 1px 2px rgba(46,16,101,.05),0 4px 16px -4px rgba(46,16,101,.10);
+  --shadow-hover:0 2px 4px rgba(46,16,101,.07),0 12px 30px -6px rgba(46,16,101,.20);
+  --ok:#00bcbb; --warn:#d83b01; --amber:#d97706;
+  --purple:#8271fa; --blue:#44b8f3; --deep:#5c00bd; --cyan:#00bcbb;
+  --purple-dark:#5c00bd;
+  --radius:16px; --radius-sm:10px;
+}
+[data-theme="dark"]{
+  --bg:#191522; --surface:#221d30; --surface-2:#2a2438; --border:#383147;
+  --text:#f3f2f8; --muted:#a9a4bd; --faint:#7d7890;
+  --brand:#8271fa; --brand-hover:#9d8bff; --on-brand:#14101f;
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 6px 20px -4px rgba(0,0,0,.5);
+  --shadow-hover:0 2px 4px rgba(0,0,0,.4),0 12px 32px -6px rgba(0,0,0,.6);
+  --ok:#26d0cf; --warn:#f7630c; --amber:#fbbf24;
+  --purple:#9d8bff; --blue:#6ecbf7; --deep:#b9adff; --cyan:#26d0cf;
+  --purple-dark:#b9adff;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",sans-serif;
+  font-size:14px; line-height:1.45; -webkit-font-smoothing:antialiased;
+}
+.skip-link{position:absolute;left:-999px;top:0;background:var(--brand);color:var(--on-brand);padding:8px 14px;border-radius:0 0 8px 0;z-index:50}
+.skip-link:focus{left:0}
+a{color:var(--brand)}
+button{font:inherit}
+
+/* ---------- header ---------- */
+.app-header{
+  position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px;
+  padding:10px 20px;border-bottom:1px solid var(--border);
+  background:color-mix(in srgb,var(--surface) 86%,transparent);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+}
+.app-header::before{
+  content:"";position:absolute;left:0;right:0;top:0;height:3px;
+  background:linear-gradient(90deg,#5c00bd,#8271fa 35%,#44b8f3 70%,#00bcbb);
+}
+.brand-mark{
+  width:38px;height:38px;border-radius:10px;flex:0 0 auto;
+  background:#ffffff;padding:3px;object-fit:contain;
+  box-shadow:inset 0 0 0 1px var(--border);
+}
+.brand-name{font-weight:650;font-size:15px;display:block;line-height:1.15}
+.brand-tag{font-size:11.5px;color:var(--muted);display:block}
+.header-page{font-size:15px;font-weight:650;letter-spacing:-.2px}
+.header-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+.chip{
+  display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);
+  background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:4px 12px;
+}
+.chip .dot{width:7px;height:7px;border-radius:50%;background:var(--cyan)}
+
+.btn{
+  position:relative;overflow:hidden;
+  display:inline-flex;align-items:center;gap:7px;border:1px solid var(--border);
+  background:var(--surface);color:var(--text);border-radius:var(--radius-sm);
+  padding:7px 13px;font-size:13px;font-weight:550;cursor:pointer;
+  transition:background .15s,box-shadow .15s,transform .1s,border-color .15s;
+}
+.btn:hover{background:var(--surface-2)}
+.btn:active{transform:scale(.97)}
+.btn-icon{padding:8px}
+.btn:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+
+/* ---------- sidebar ---------- */
+body{padding-left:248px}
+.sidebar{
+  position:fixed;left:0;top:0;bottom:0;width:248px;z-index:22;
+  padding:14px 12px 16px;overflow-y:auto;display:flex;flex-direction:column;
+  background:var(--surface);border-right:1px solid var(--border);
+}
+.side-brand{
+  display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--text);
+  padding:4px 8px 14px;margin-bottom:10px;border-bottom:1px solid var(--border);
+}
+.side-brand .brand-name,.side-brand .brand-tag{white-space:nowrap}
+.side-section{
+  padding:8px 10px 6px;font-size:10.5px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.7px;color:var(--faint);
+}
+.side-link{
+  display:flex;align-items:center;gap:10px;padding:9px 10px;margin-bottom:2px;
+  border-radius:10px;color:var(--text);text-decoration:none;font-size:13px;font-weight:550;
+  transition:background .13s,color .13s;
+}
+.side-link:hover{background:var(--surface-2)}
+.side-link.active{
+  background:color-mix(in srgb,var(--brand) 11%,var(--surface));color:var(--brand);font-weight:650;
+}
+.side-link svg{flex:0 0 auto;opacity:.85}
+.side-link.active svg{opacity:1}
+.side-foot{
+  margin-top:auto;padding:12px 8px 4px;border-top:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+}
+.side-foot .foot-text{font-size:12.5px;font-weight:600;line-height:1.2}
+.side-foot .foot-text small{display:block;font-size:11px;color:var(--muted);font-weight:500}
+.side-scrim{
+  position:fixed;inset:0;z-index:14;background:rgba(24,14,45,.45);display:none;
+}
+.side-toggle{display:none}
+
+/* ---------- layout ---------- */
+main{max-width:1360px;margin:0 auto;padding:22px 20px 60px}
+.page-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:22px}
+.page-title{font-size:22px;font-weight:680;margin:0 0 3px;letter-spacing:-.2px}
+.page-sub{margin:0;color:var(--muted);font-size:13px}
+.card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:18px 20px;
+  transition:box-shadow .2s,transform .2s;
+  animation:rise .45s cubic-bezier(.2,.7,.3,1) var(--d,0s) backwards;
+}
+.card.hoverable:hover{box-shadow:var(--shadow-hover);transform:translateY(-2px)}
+.card-title{font-size:14.5px;font-weight:650;margin:0 0 2px}
+.card-sub{font-size:12px;color:var(--muted);margin:0 0 12px}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- KPI cards ---------- */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px;margin-bottom:22px}
+.kpi{position:relative;overflow:hidden}
+.kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent,var(--brand));border-radius:4px 0 0 4px}
+.kpi-head{display:flex;flex-direction:column;align-items:center;gap:4px;margin-bottom:8px;text-align:center}
+.kpi-label{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin:0}
+.kpi-value{
+  font-size:26px;font-weight:700;letter-spacing:-.5px;line-height:1.1;
+  background:linear-gradient(115deg,#5c00bd,#44b8f3);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+[data-theme="dark"] .kpi-value{background-image:linear-gradient(115deg,#b9adff,#6ecbf7)}
+.kpi-sub{font-size:12px;color:var(--muted);margin-top:6px;text-align:center}
+.goal-pill{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:999px;white-space:nowrap;margin-top:6px}
+.goal-pill.ok{background:color-mix(in srgb,var(--cyan) 15%,transparent);color:var(--cyan)}
+.goal-pill.miss{background:color-mix(in srgb,var(--amber) 18%,transparent);color:var(--amber)}
+.kpi.below{box-shadow:var(--shadow),inset 0 0 0 1px color-mix(in srgb,var(--amber) 45%,transparent)}
+.kpi.below .kpi-value{background:none;color:var(--amber)}
+.below-goal{color:var(--amber);font-weight:650;background:color-mix(in srgb,var(--amber) 12%,transparent);border-radius:5px;padding:1px 7px}
+.kpi-sub b{color:var(--text);font-weight:650}
+
+/* ---------- charts ---------- */
+.grid{display:grid;gap:18px;grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:22px}
+.chart{width:100%;display:block}
+.axis{font-size:11px;fill:var(--muted)}
+.gridline{stroke:var(--border);stroke-dasharray:3 4;stroke-width:1}
+.bar-value{font-size:10.5px;font-weight:600;fill:var(--deep)}
+.bar-value.c-dark{fill:var(--muted)}
+.legend{display:flex;justify-content:center;gap:12px;margin-top:6px;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.chart-tip{
+  position:fixed;z-index:40;pointer-events:none;background:var(--text);color:var(--bg);
+  font-size:12px;padding:6px 10px;border-radius:8px;opacity:0;transition:opacity .12s;
+  box-shadow:var(--shadow-hover);white-space:nowrap;
+}
+
+/* ---------- leadership snapshot ---------- */
+.insights{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.insights li{
+  display:flex;gap:10px;align-items:flex-start;padding:12px 14px;
+  border:1px solid var(--border);border-radius:12px;background:var(--surface-2);
+}
+.ins-dot{width:9px;height:9px;border-radius:50%;margin-top:5px;flex:0 0 auto;background:var(--cyan)}
+.insights li.watch{background:color-mix(in srgb,var(--amber) 7%,var(--surface-2));border-color:color-mix(in srgb,var(--amber) 45%,var(--border))}
+.insights li.watch .ins-dot{background:var(--amber)}
+.ins-name{font-weight:650;font-size:13px;display:block;margin-bottom:1px}
+.ins-text{font-size:12.5px;color:var(--muted);line-height:1.5}
+.ins-text b{color:var(--text)}
+.ins-tag{margin-left:auto;flex:0 0 auto;font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:.4px}
+.ins-tag.ok{background:color-mix(in srgb,var(--cyan) 15%,transparent);color:var(--cyan)}
+.ins-tag.watch{background:color-mix(in srgb,var(--amber) 18%,transparent);color:var(--amber)}
+
+/* ---------- monthly table ---------- */
+.table-wrap{overflow:auto;border:1px solid var(--border);border-radius:var(--radius-sm)}
+table.data{width:100%;border-collapse:collapse;font-size:13px;min-width:520px;table-layout:fixed}
+table.data th:first-child{width:110px}
+table.data th{
+  background:var(--surface-2);text-align:left;font-size:11px;
+  text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:650;
+  padding:9px 14px;border-bottom:1px solid var(--border);white-space:nowrap;
+}
+table.data td{padding:9px 14px;border-bottom:1px solid var(--border);overflow:hidden;text-overflow:ellipsis}
+table.data tbody tr{transition:background .12s}
+table.data tbody tr:hover{background:var(--surface-2)}
+table.data tbody tr:last-child td{border-bottom:0}
+.num{text-align:center;font-variant-numeric:tabular-nums}
+table.data th.num{text-align:center}
+
+/* ---------- footer ---------- */
+footer{max-width:1360px;margin:0 auto;padding:0 20px 40px;color:var(--faint);font-size:12px;line-height:1.6;text-align:center}
+footer code{background:var(--surface-2);border:1px solid var(--border);border-radius:5px;padding:1px 6px;font-size:11px}
+
+/* ---------- announcement banner ---------- */
+.announce{
+  max-width:1360px;margin:14px auto 0;padding:10px 20px;display:flex;align-items:center;gap:10px;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--brand) 10%,var(--surface)),var(--surface));
+  border:1px solid color-mix(in srgb,var(--brand) 30%,var(--border));border-radius:var(--radius);
+  font-size:13px;box-shadow:var(--shadow);
+  animation:rise .45s cubic-bezier(.2,.7,.3,1) backwards;
+}
+.announce svg{flex:0 0 auto;color:var(--brand)}
+.announce #announceText{flex:1;line-height:1.45}
+.announce button{margin-left:auto;border:0;background:none;color:var(--muted);font-size:15px;cursor:pointer;padding:2px 9px;border-radius:6px}
+.announce button:hover{background:var(--surface-2);color:var(--text)}
+
+/* ---------- header extras ---------- */
+.kbd{
+  font:600 10.5px/1 "Segoe UI",system-ui,sans-serif;color:var(--muted);
+  background:var(--surface-2);border:1px solid var(--border);border-bottom-width:2px;
+  border-radius:5px;padding:3px 6px;
+}
+.notif-wrap{position:relative}
+.notif-wrap .badge{
+  position:absolute;top:0;right:0;min-width:16px;height:16px;padding:0 4px;
+  border-radius:999px;background:var(--warn);color:#fff;font-size:10px;font-weight:700;
+  display:grid;place-items:center;box-shadow:0 0 0 2px var(--surface);
+}
+.notif-panel{
+  position:absolute;right:0;top:calc(100% + 10px);width:330px;max-width:92vw;
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  box-shadow:var(--shadow-hover);z-index:30;overflow:hidden;
+  animation:pop .18s cubic-bezier(.2,.7,.3,1) backwards;
+}
+@keyframes pop{from{opacity:0;transform:translateY(-6px) scale(.98)}to{opacity:1;transform:none}}
+.notif-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);font-weight:650;font-size:13px}
+.notif-head span{color:var(--muted);font-weight:550;font-size:11.5px}
+.notif-list{max-height:320px;overflow:auto}
+.notif-item{display:flex;gap:10px;padding:11px 16px;border-bottom:1px solid var(--border);font-size:12.5px;align-items:flex-start;cursor:pointer;transition:background .12s}
+.notif-item:last-child{border-bottom:0}
+.notif-item:hover{background:var(--surface-2)}
+.notif-item .ins-dot{margin-top:4px}
+.notif-item .t{color:var(--muted);font-size:11.5px;display:block;margin-top:2px;line-height:1.45}
+.notif-empty{padding:22px 16px;text-align:center;color:var(--muted);font-size:12.5px}
+
+/* ---------- inline code ---------- */
+.code{
+  font-family:Consolas,"Courier New",monospace;font-size:12px;font-weight:700;color:var(--brand);
+  background:color-mix(in srgb,var(--brand) 10%,var(--surface-2));
+  border:1px solid color-mix(in srgb,var(--brand) 25%,var(--border));border-radius:5px;padding:1px 7px;
+}
+
+/* ---------- delta pills ---------- */
+.delta{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:650;margin-top:5px}
+.delta.up{color:var(--cyan)}
+.delta.down{color:var(--warn)}
+
+/* ---------- button ripple ---------- */
+.ripple{
+  position:absolute;border-radius:50%;background:currentColor;opacity:.22;
+  transform:scale(0);animation:ripple .55s ease-out forwards;pointer-events:none;
+}
+@keyframes ripple{to{transform:scale(2.6);opacity:0}}
+
+/* ---------- jump-to highlight ---------- */
+.flash{animation:flashRing 1.4s ease-out 1}
+@keyframes flashRing{
+  0%{box-shadow:var(--shadow),0 0 0 0 color-mix(in srgb,var(--brand) 55%,transparent)}
+  100%{box-shadow:var(--shadow),0 0 0 16px transparent}
+}
+
+/* ---------- command palette ---------- */
+.palette-overlay{
+  position:fixed;inset:0;z-index:60;display:none;align-items:flex-start;justify-content:center;
+  padding:12vh 16px 20px;background:rgba(24,14,45,.45);
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+}
+[data-theme="dark"] .palette-overlay{background:rgba(0,0,0,.55)}
+.palette-overlay.open{display:flex;animation:fadeIn .15s ease-out}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.palette{
+  width:min(560px,100%);background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;box-shadow:var(--shadow-hover);overflow:hidden;
+  animation:pop .18s cubic-bezier(.2,.7,.3,1) backwards;
+}
+.palette-input-wrap{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border)}
+.palette-input-wrap:focus-within{box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--brand) 45%,transparent)}
+.palette-input-wrap svg{color:var(--faint);flex:0 0 auto}
+.palette-input-wrap input{flex:1;border:0;background:none;color:var(--text);font:inherit;font-size:14.5px;outline:none}
+.palette-list{max-height:330px;overflow:auto;padding:6px}
+.palette-item{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:10px;cursor:pointer;font-size:13.5px}
+.palette-item.active{background:var(--surface-2)}
+.palette-item .pi-ic{
+  width:26px;height:26px;border-radius:7px;display:grid;place-items:center;flex:0 0 auto;
+  background:color-mix(in srgb,var(--brand) 12%,var(--surface-2));color:var(--brand);font-size:12px;font-weight:700;
+}
+.palette-item small{margin-left:auto;color:var(--faint);font-size:11px;flex:0 0 auto}
+.palette-cat{padding:8px 12px 3px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--faint)}
+.palette-empty{padding:26px;text-align:center;color:var(--muted);font-size:13px}
+.palette-foot{display:flex;gap:14px;align-items:center;padding:9px 16px;border-top:1px solid var(--border);color:var(--faint);font-size:11px}
+
+/* ---------- floating action button (mobile) ---------- */
+.fab{
+  display:none;position:fixed;right:18px;bottom:18px;z-index:25;width:52px;height:52px;
+  border-radius:16px;border:0;background:linear-gradient(135deg,var(--brand),#44b8f3);
+  color:#fff;place-items:center;cursor:pointer;box-shadow:var(--shadow-hover);
+  transition:transform .15s;
+}
+.fab:active{transform:scale(.94)}
+
+/* ---------- mascot ---------- */
+.mascot-wrap{position:fixed;right:20px;bottom:16px;z-index:26;pointer-events:none}
+.mascot{
+  display:block;width:110px;height:auto;user-select:none;cursor:pointer;
+  pointer-events:auto;
+  filter:drop-shadow(0 6px 14px rgba(46,16,101,.28));
+  animation:mascotBob 4.5s ease-in-out infinite;
+}
+[data-theme="dark"] .mascot{filter:drop-shadow(0 6px 14px rgba(0,0,0,.55))}
+@keyframes mascotBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+
+/* ---------- mascot speech bubble ---------- */
+.mascot-bubble{
+  position:absolute;right:6px;bottom:calc(100% + 10px);width:230px;pointer-events:auto;
+  background:var(--surface);border:1px solid var(--border);border-radius:14px 14px 4px 14px;
+  padding:11px 13px;box-shadow:var(--shadow-hover);font-size:12.5px;line-height:1.45;
+  animation:pop .3s cubic-bezier(.2,.7,.3,1) .8s backwards;
+}
+.mascot-bubble::after{
+  content:"";position:absolute;right:14px;bottom:-7px;width:14px;height:14px;
+  background:var(--surface);border-right:1px solid var(--border);border-bottom:1px solid var(--border);
+  transform:rotate(45deg);
+}
+.mascot-bubble b{color:var(--brand)}
+.mb-x{
+  position:absolute;top:5px;right:5px;border:0;background:none;color:var(--faint);
+  font-size:11px;cursor:pointer;padding:3px 6px;border-radius:5px;
+}
+.mb-x:hover{background:var(--surface-2);color:var(--text)}
+.mb-cta{
+  margin-top:9px;border:0;border-radius:8px;padding:6px 13px;cursor:pointer;
+  background:var(--brand);color:var(--on-brand);font-size:12px;font-weight:600;
+  transition:background .15s,transform .1s;
+}
+.mb-cta:hover{background:var(--brand-hover)}
+.mb-cta:active{transform:scale(.96)}
+
+/* ---------- mascot assistant pop-up ---------- */
+.mascot-pop{
+  position:absolute;right:0;bottom:calc(100% + 10px);width:300px;max-width:86vw;pointer-events:auto;
+  display:flex;flex-direction:column;height:390px;max-height:70vh;
+  background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  box-shadow:var(--shadow-hover);overflow:hidden;
+  animation:pop .2s cubic-bezier(.2,.7,.3,1) backwards;
+}
+.mp-head{
+  display:flex;align-items:center;gap:9px;padding:11px 14px;
+  border-bottom:1px solid var(--border);
+  background:linear-gradient(90deg,color-mix(in srgb,var(--brand) 10%,var(--surface)),var(--surface));
+}
+.mp-head .mp-av{
+  width:30px;height:30px;border-radius:50%;background:#fff;
+  display:grid;place-items:center;box-shadow:inset 0 0 0 1px var(--border);flex:0 0 auto;
+}
+.mp-head .mp-av img{width:24px;height:24px;object-fit:contain}
+.mp-head b{font-size:13.5px;display:block;line-height:1.2}
+.mp-status{font-size:10.5px;color:var(--muted);display:inline-flex;align-items:center;gap:5px}
+.mp-status i{width:7px;height:7px;border-radius:50%;background:var(--cyan)}
+.mp-head button{margin-left:auto;border:0;background:none;color:var(--muted);font-size:14px;cursor:pointer;padding:4px 8px;border-radius:6px}
+.mp-head button:hover{background:var(--surface-2);color:var(--text)}
+.mp-body{flex:1;overflow-y:auto;padding:13px;display:flex;flex-direction:column;gap:8px}
+.mp-msg{
+  max-width:85%;padding:8px 12px;border-radius:14px 14px 14px 4px;
+  background:var(--surface-2);font-size:12.5px;line-height:1.45;align-self:flex-start;
+}
+.mp-msg.user{
+  align-self:flex-end;border-radius:14px 14px 4px 14px;
+  background:var(--brand);color:var(--on-brand);
+}
+.mp-input{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--border)}
+.mp-input input{
+  flex:1;border:1px solid var(--border);border-radius:999px;background:var(--surface-2);
+  color:var(--text);font:inherit;font-size:12.5px;padding:7px 13px;outline:none;
+}
+.mp-input input:focus{border-color:var(--brand)}
+.mp-input button{
+  width:34px;height:34px;border:0;border-radius:50%;cursor:pointer;flex:0 0 auto;
+  background:var(--brand);color:var(--on-brand);display:grid;place-items:center;
+  transition:background .15s,transform .1s;
+}
+.mp-input button:hover{background:var(--brand-hover)}
+.mp-input button:active{transform:scale(.92)}
+
+@media (max-width:960px){
+  .grid{grid-template-columns:1fr}
+  .insights{grid-template-columns:1fr}
+  .page-title{font-size:19px}
+  .fab{display:grid}
+  body{padding-left:0}
+  .sidebar{transform:translateX(-105%);transition:transform .25s cubic-bezier(.2,.7,.3,1);box-shadow:var(--shadow-hover)}
+  .sidebar.open{transform:none}
+  .side-scrim.show{display:block}
+  .side-toggle{display:inline-flex}
+  .mascot-wrap{right:14px;bottom:80px}
+  .mascot-wrap .mascot{width:70px}
+  .mascot-bubble{width:200px;font-size:12px}
+  .mascot-pop{width:270px;height:360px}
+}
+@media (max-width:640px){
+  .hide-sm{display:none}
+  .header-actions .chip{display:none}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<header class="app-header">
+  <button class="btn btn-icon side-toggle" id="sideToggle" aria-label="Open navigation" title="Menu">
+    <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
+  </button>
+  <span class="header-page">Dashboard</span>
+  <div class="header-actions">
+    <!-- Refreshed chip removed per request -->
+    <button class="btn" id="paletteBtn" aria-label="Open command palette" title="Search &amp; actions">
+      <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3" stroke-linecap="round"/></svg>
+      <span class="hide-sm">Search</span><kbd class="kbd hide-sm">Ctrl K</kbd>
+    </button>
+    <div class="notif-wrap">
+      <button class="btn btn-icon" id="notifBtn" aria-label="Notifications" aria-haspopup="true" aria-expanded="false" title="Notifications">
+        <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor"><path d="M8 1.5a4.5 4.5 0 0 0-4.5 4.5v2.6l-1.2 2.4a.6.6 0 0 0 .54.85h10.32a.6.6 0 0 0 .54-.85l-1.2-2.4V6A4.5 4.5 0 0 0 8 1.5Zm0 12.5a2 2 0 0 0 1.85-1.25h-3.7A2 2 0 0 0 8 14Z"/></svg>
+        <span class="badge" id="notifBadge" hidden></span>
+      </button>
+      <div class="notif-panel" id="notifPanel" hidden>
+        <div class="notif-head">Notifications<span id="notifSub"></span></div>
+        <div class="notif-list" id="notifList"></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="side-scrim" id="sideScrim"></div>
+<nav class="sidebar" id="sidebar" aria-label="Main navigation">
+  <a class="side-brand" href="ecob-insights.html">
+    <img class="brand-mark" src="eCOBIcon.png" alt="eCOB logo" width="38" height="38">
+    <span class="brand-text">
+      <span class="brand-name">eCOB Bridge Hub</span>
+      <span class="brand-tag">Right Coverage. Right Order.</span>
+    </span>
+  </a>
+  <div class="side-section">Menu</div>
+  <a class="side-link active" href="ecob-insights.html" aria-current="page">
+    <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="5" height="5" rx="1.2"/><rect x="9" y="2" width="5" height="5" rx="1.2"/><rect x="2" y="9" width="5" height="5" rx="1.2"/><rect x="9" y="9" width="5" height="5" rx="1.2"/></svg>
+    Dashboard
+  </a>
+  <a class="side-link" href="process-guide.html">
+    <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 3.5A1.5 1.5 0 0 1 4 2h9.5v11H4a1.5 1.5 0 0 0-1.5 1.5Z"/><path d="M2.5 14.5A1.5 1.5 0 0 1 4 13h9.5"/><path d="M6 5.5h4.5M6 8h4.5"/></svg>
+    Process Guide
+  </a>
+  <a class="side-link" href="admin.html">
+    <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="5" r="2.5"/><path d="M3 13.5c0-2.5 2.2-4 5-4s5 1.5 5 4"/></svg>
+    Admin
+  </a>
+  <div class="side-foot">
+    <button class="btn btn-icon" id="themeToggle" aria-label="Toggle dark mode" title="Toggle theme">
+      <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor"><path d="M13.5 10.5A6 6 0 0 1 5.5 2.5 6 6 0 1 0 13.5 10.5Z"/></svg>
+    </button>
+    <span class="foot-text">Appearance<small id="themeState">Dark</small></span>
+  </div>
+</nav>
+
+<div class="announce" id="announce" role="status" hidden>
+  <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M14 2.5v8a1 1 0 0 1-1.6.8L9 8.7V11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9H3a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1l8.4-2.3A1 1 0 0 1 14 2.5ZM6 9v2h1V9H6Z"/></svg>
+  <span id="announceText"></span>
+  <button id="announceDismiss" aria-label="Dismiss announcement">✕</button>
+</div>
+
+<main id="main" tabindex="-1">
+  <div class="page-head">
+    <div>
+      <h1 class="page-title">Year-to-Date Operations Insights</h1>
+    </div>
+  </div>
+
+  <section class="kpi-grid" id="kpiGrid" aria-label="Key performance indicators"></section>
+
+  <section class="grid" aria-label="Monthly charts">
+    <div class="card hoverable" id="cardProd">
+      <h2 class="card-title">YTD Productivity</h2>
+      <p class="card-sub">Productivity-rate by Month with 100% Target</p>
+      <div id="chProd"></div>
+    </div>
+    <div class="card hoverable" id="cardCount">
+      <h2 class="card-title">YTD Productivity Count</h2>
+      <div id="chCount"></div>
+    </div>
+    <div class="card hoverable" id="cardQuality">
+      <h2 class="card-title">YTD Quality</h2>
+      <p class="card-sub">Quality Score by Month with 98% Target</p>
+      <div id="chQuality"></div>
+    </div>
+    <div class="card hoverable" id="cardAttendance">
+      <h2 class="card-title">YTD Attendance</h2>
+      <p class="card-sub">Attendance-rate by Month with 90% Target</p>
+      <div id="chAttendance"></div>
+    </div>
+  </section>
+
+  <section class="card" id="snapshotCard" style="margin-bottom:22px" aria-label="Current month snapshot">
+    <div class="page-head" style="margin-bottom:12px">
+      <div>
+        <h2 class="card-title">Current Month Snapshot</h2>
+        <p class="card-sub" style="margin:0">Auto-generated takeaways from the latest month of data — <span id="insightMonth">—</span>.</p>
+      </div>
+      <span class="chip" id="insightHealth" title="Metrics on goal vs. items to watch"></span>
+    </div>
+    <ul class="insights" id="insightList"></ul>
+  </section>
+
+  <section class="card" id="tableCard" aria-label="Monthly data">
+    <h2 class="card-title">Monthly detail</h2>
+    <p class="card-sub">The same values shown in the charts — this table is generated from the embedded data block.</p>
+    <div class="table-wrap"><table class="data" id="mTable"></table></div>
+  </section>
+
+  <section class="card" id="invCard" style="margin-top:22px" aria-label="Daily inventory">
+    <h2 class="card-title">Daily Inventory — November</h2>
+    <p class="card-sub">Day-to-day inventory counts starting Nov 1 — generated from the embedded inventory block.</p>
+    <div class="table-wrap"><table class="data" id="invTable"></table></div>
+  </section>
+</main>
+
+<footer>
+  A Process Improvement Initiative of Asst. Mgr. <b>Erwin Esloyo</b> &amp; Asst. Mgr. <b>Kenneth So</b>&nbsp;|&nbsp;Developer: <b>Brix Badar</b> — eCOB Specialist<br>
+  <span style="font-weight:600;color:var(--muted)">Payment Integrity Enterprise Coordination of Benefits</span>
+</footer>
+
+<div class="mascot-wrap">
+  <div class="mascot-pop" id="mascotPop" role="dialog" aria-label="eCOB-i assistant" hidden>
+    <div class="mp-head">
+      <span class="mp-av"><img src="eCOBIcon.png" alt=""></span>
+      <div><b>eCOB-i</b><span class="mp-status"><i></i>Online</span></div>
+      <button id="mpClose" aria-label="Close assistant">✕</button>
+    </div>
+    <div class="mp-body" id="mpBody">
+      <div class="mp-msg">Hi, I am <b>eCOB-i</b>. How can I assist you?</div>
+    </div>
+    <div class="mp-input">
+      <input id="mpInput" type="text" placeholder="Type a message…" autocomplete="off" aria-label="Message eCOB-i">
+      <button id="mpSend" aria-label="Send message">
+        <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor"><path d="M1.7 1.9a.6.6 0 0 1 .66-.13l12 6a.6.6 0 0 1 0 1.1l-12 6A.6.6 0 0 1 1.6 14l1.5-5.4 7-.6-7-.6L1.6 2a.6.6 0 0 1 .1-.1Z"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="mascot-bubble" id="mascotBubble">
+    <button class="mb-x" id="bubbleDismiss" aria-label="Dismiss message">✕</button>
+    <span>Hi, I am <b>eCOB-i</b>. How can I assist you?</span>
+    <button class="mb-cta" id="mascotCta">Chat with me</button>
+  </div>
+  <img class="mascot" id="mascotImg" src="eCOB-i.gif" alt="eCOB-i mascot" role="button" tabindex="0" aria-label="Open eCOB-i assistant">
+</div>
+
+<button class="fab" id="fab" aria-label="Open quick actions" title="Search &amp; actions">
+  <svg viewBox="0 0 16 16" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3" stroke-linecap="round"/></svg>
+</button>
+
+<div class="palette-overlay" id="paletteOverlay">
+  <div class="palette" role="dialog" aria-modal="true" aria-label="Command palette">
+    <div class="palette-input-wrap">
+      <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3" stroke-linecap="round"/></svg>
+      <input id="paletteInput" type="text" placeholder="Search metrics, months, or actions…" autocomplete="off" spellcheck="false" aria-label="Search commands and metrics">
+    </div>
+    <div class="palette-list" id="paletteList" role="listbox" aria-label="Results"></div>
+    <div class="palette-foot"><span><kbd class="kbd">↑↓</kbd> navigate</span><span><kbd class="kbd">↵</kbd> open</span><span><kbd class="kbd">esc</kbd> close</span></div>
+  </div>
+</div>
+
+<div class="chart-tip" id="tip" role="status"></div>
+
+<!-- Shared data layer: ECOB_META, METRICS_CSV, NAIC_CSV + ECOB helpers/reply engine.
+     Edit metrics and goals in ecob-data.js — both pages read from it. -->
+<script src="ecob-data.js"></script>
+<script>
+(function () {
+'use strict';
+var METRICS_META = ECOB_META;
+var $ = function (s) { return document.querySelector(s); };
+var tip = $('#tip');
+
+/* ---------- formatting ---------- */
+var fmtInt = function (n) { return Math.round(n).toLocaleString('en-US'); };
+var fmtPct = function (n) { return n.toFixed(2) + '%'; };
+var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+
+/* ---------- CSV parsing ---------- */
+function parseCSV(text) {
+  var rows = [], i = 0, cur = [], val = '', q = false;
+  text = String(text).replace(/\r\n?/g, '\n');
+  while (i <= text.length) {
+    var c = text[i];
+    if (q) {
+      if (c === '"') { if (text[i + 1] === '"') { val += '"'; i++; } else q = false; }
+      else if (c === undefined) break; else val += c;
+    } else if (c === '"') q = true;
+    else if (c === ',' || c === '\t' || c === undefined || c === '\n') {
+      cur.push(val); val = '';
+      if (c === '\n' || c === undefined) { if (cur.length > 1 || cur[0] !== '') rows.push(cur); cur = []; }
+      if (c === undefined) break;
+    } else val += c;
+    i++;
+  }
+  return rows;
+}
+
+/* ---------- model ---------- */
+function loadMonths(csvText) {
+  var t = parseCSV(csvText.trim());
+  var head = t.shift().map(function (h) { return h.trim().toLowerCase(); });
+  var ci = function (n) { return head.indexOf(n); };
+  var cM = ci('month'), cP = ci('productivity'), cC = ci('prod_count'), cQ = ci('quality'), cA = ci('attendance');
+  if (cM < 0 || cP < 0 || cC < 0) return [];
+  return t.map(function (r) {
+    return {
+      month: (r[cM] || '').trim(),
+      productivity: +String(r[cP] || '').replace(/[%,]/g, '') || 0,
+      count: +String(r[cC] || '').replace(/[%,]/g, '') || 0,
+      quality: cQ < 0 ? null : (+String(r[cQ] || '').replace(/[%,]/g, '') || 0),
+      attendance: cA < 0 ? null : (+String(r[cA] || '').replace(/[%,]/g, '') || 0)
+    };
+  }).filter(function (r) { return r.month; });
+}
+
+function buildModel(months) {
+  var n = months.length || 1;
+  var sumP = 0, sumC = 0;
+  months.forEach(function (m) { sumP += m.productivity; sumC += m.count; });
+  var peak = months.reduce(function (a, b) { return b.productivity > a.productivity ? b : a; }, months[0] || { productivity: 0 });
+  var peakC = months.reduce(function (a, b) { return b.count > a.count ? b : a; }, months[0] || { count: 0 });
+  var prev = months.length > 1 ? months[months.length - 2] : null;
+  var qVals = months.filter(function (m) { return m.quality != null; });
+  var aVals = months.filter(function (m) { return m.attendance != null; });
+  var avgOf = function (arr, key) { return arr.length ? arr.reduce(function (a, b) { return a + b[key]; }, 0) / arr.length : 0; };
+  return {
+    months: months,
+    avgProd: sumP / n,
+    avgQuality: avgOf(qVals, 'quality'),
+    avgAttendance: avgOf(aVals, 'attendance'),
+    totalCount: sumC,
+    avgCount: sumC / n,
+    peak: peak, peakC: peakC,
+    latest: months[months.length - 1] || null,
+    prev: prev,
+    delta: prev && months.length > 1 ? months[months.length - 1].productivity - prev.productivity : 0,
+    hasQuality: months.some(function (m) { return m.quality != null; }),
+    deltaQ: prev && months.length > 1 && prev.quality != null ? months[months.length - 1].quality - prev.quality : 0,
+    peakQ: months.reduce(function (a, b) { return (b.quality || 0) > (a.quality || 0) ? b : a; }, months[0] || { quality: 0 }),
+    hasAttendance: months.some(function (m) { return m.attendance != null; }),
+    deltaA: prev && months.length > 1 && prev.attendance != null ? months[months.length - 1].attendance - prev.attendance : 0
+  };
+}
+
+/* ---------- svg helpers ---------- */
+var SVGNS = 'http://www.w3.org/2000/svg';
+function S(tag, attrs, parent) {
+  var e = document.createElementNS(SVGNS, tag);
+  for (var k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function txt(parent, x, y, s, cls, anchor) {
+  var t = S('text', { x: x, y: y, 'class': cls || 'axis' }, parent);
+  if (anchor) t.setAttribute('text-anchor', anchor);
+  t.textContent = s;
+  return t;
+}
+function bindTip(el, html) {
+  el.addEventListener('mousemove', function (e) {
+    tip.innerHTML = html; tip.style.opacity = 1;
+    tip.style.left = Math.min(e.clientX + 14, innerWidth - 190) + 'px';
+    tip.style.top = (e.clientY + 14) + 'px';
+  });
+  el.addEventListener('mouseleave', function () { tip.style.opacity = 0; });
+}
+
+/* ---------- bar + trendline chart (matches reference style) ---------- */
+function metricChart(el, months, opts) {
+  el.innerHTML = '';
+  var w = 560, h = 250, padR = 10, padT = 26, padB = 30;
+  var vals = months.map(function (m) { return m.value; });
+  var max = Math.max.apply(null, vals.concat([1]));
+  var min = Math.min.apply(null, vals);
+
+  // zoomed baseline for tight-range metrics — floor sits just below the min
+  var floor = 0;
+  if (opts.zoom) {
+    var rng = Math.max(0.5, max - min);
+    floor = Math.max(0, Math.floor((min - rng * 0.6) * 2) / 2);
+  }
+  var padL = floor > 0 ? 36 : 10;
+  var top = max + (max - floor) * 0.08;
+
+  var svg = S('svg', { viewBox: '0 0 ' + w + ' ' + h, 'class': 'chart', role: 'img', style: 'height:auto' }, el);
+
+  var defs = S('defs', {}, svg);
+  var grad = S('linearGradient', { id: opts.gradId, x1: '0', y1: '0', x2: '0', y2: '1' }, defs);
+  S('stop', { offset: '0%', 'stop-color': opts.gradTop }, grad);
+  S('stop', { offset: '100%', 'stop-color': opts.gradBot }, grad);
+
+  var n = months.length || 1;
+  var plotW = w - padL - padR, plotH = h - padT - padB;
+  var cw = plotW / n, bw = Math.min(44, cw * 0.62);
+  var Y = function (v) { return padT + (1 - (v - floor) / (top - floor)) * plotH; };
+  var X = function (i) { return padL + i * cw + cw / 2; };
+
+  // gridlines + axis labels when the baseline is zoomed
+  if (floor > 0) {
+    for (var g = 0; g <= 4; g++) {
+      var gv = floor + (top - floor) * g / 4, gy = Y(gv);
+      S('line', { x1: padL, y1: gy, x2: w - padR, y2: gy, 'class': 'gridline' }, svg);
+      txt(svg, padL - 6, gy + 3, opts.axisFmt ? opts.axisFmt(gv) : gv.toFixed(0), 'axis', 'end');
+    }
+  }
+  S('line', { x1: padL, y1: h - padB, x2: w - padR, y2: h - padB, stroke: 'var(--border)', 'stroke-width': 1 }, svg);
+
+  months.forEach(function (m, i) {
+    var y = Math.min(Y(m.value), h - padB - 2);
+    var x = X(i) - bw / 2;
+    var rc = S('rect', { x: x, y: y, width: bw, height: Math.max(2, h - padB - y), rx: 4, fill: 'url(#' + opts.gradId + ')' }, svg);
+    bindTip(rc, '<b>' + esc(m.month) + '</b><br>' + opts.fmt(m.value));
+    txt(svg, X(i), y - 6, opts.labelFmt(m.value), 'bar-value' + (opts.dark ? ' c-dark' : ''), 'middle');
+    txt(svg, X(i), h - 10, m.month, 'axis', 'middle');
+  });
+
+  // linear-regression trendline across bar centers
+  var sx = 0, sy = 0, sxy = 0, sx2 = 0;
+  months.forEach(function (m, i) { sx += i; sy += m.value; sxy += i * m.value; sx2 += i * i; });
+  var den = n * sx2 - sx * sx;
+  if (den && n > 1) {
+    var b = (n * sxy - sx * sy) / den, a = (sy - b * sx) / n;
+    S('line', {
+      x1: X(0), y1: Y(a), x2: X(n - 1), y2: Y(a + b * (n - 1)),
+      stroke: opts.trend, 'stroke-width': 2, 'stroke-linecap': 'round', opacity: .85
+    }, svg);
+  }
+
+  var lg = document.createElement('div');
+  lg.className = 'legend';
+  lg.innerHTML = '<span><i style="background:' + opts.swatch + '"></i>' + esc(opts.legend) + '</span>';
+  el.appendChild(lg);
+}
+
+/* ---------- leadership insights ---------- */
+function buildInsights(m) {
+  var G = METRICS_META.goals || {};
+  var L = m.latest;
+  // Watch trigger: value is within 2 points of its goal (or below it).
+  var BUFFER = 2;
+  var nearGoal = function (v, g) { return g != null && v < g + BUFFER; };
+  var rateText = function (v, g) {
+    if (v < g) return '<b>' + fmtPct(v) + '</b> — ' + (g - v).toFixed(2) + ' pts left to reach the ' + g + '% goal.';
+    if (v < g + BUFFER) return '<b>' + fmtPct(v) + '</b> — ' + (v - g).toFixed(2) + ' pts above the ' + g + '% goal — inside watch zone.';
+    return '<b>' + fmtPct(v) + '</b> — Above the Goal.';
+  };
+  var out = [
+    { name: 'Productivity', text: rateText(L.productivity, G.productivity), watch: nearGoal(L.productivity, G.productivity) },
+    { name: 'Productivity Count', text: '<b>' + fmtInt(L.count) + '</b> in ' + esc(L.month), watch: false }
+  ];
+  if (m.hasQuality) out.push({ name: 'Quality', text: rateText(L.quality, G.quality), watch: nearGoal(L.quality, G.quality) });
+  if (m.hasAttendance) out.push({ name: 'Attendance', text: rateText(L.attendance, G.attendance), watch: nearGoal(L.attendance, G.attendance) });
+  return out;
+}
+
+/* ---------- render ---------- */
+var model = null;
+
+function kpiCard(label, value, sub, accent, goal, deltaHtml) {
+  var below = goal != null && goal.actual < goal.target;
+  var pill = goal != null
+    ? '<div><span class="goal-pill ' + (below ? 'miss' : 'ok') + '">' + (below ? '▼' : '✓') + ' Goal ' + goal.target + '%</span></div>'
+    : '';
+  return '<div class="card kpi' + (below ? ' below' : '') + '" style="--accent:' + (below ? 'var(--amber)' : accent) + '">' +
+    '<div class="kpi-head"><p class="kpi-label">' + label + '</p><div class="kpi-value">' + value + '</div></div>' +
+    '<div class="kpi-sub">' + sub + (deltaHtml ? '<div>' + deltaHtml + '</div>' : '') + pill + '</div></div>';
+}
+
+function render(m) {
+  var G = METRICS_META.goals || {};
+  var dArrow = function (d, fmt) {
+    return '<span class="delta ' + (d >= 0 ? 'up' : 'down') + '">' + (d >= 0 ? '▲' : '▼') + ' ' +
+      fmt(Math.abs(d)) + ' vs ' + esc(m.prev.month) + '</span>';
+  };
+  $('#kpiGrid').innerHTML = [
+    kpiCard('Productivity', fmtPct(m.avgProd), 'Year-to-Date average', 'var(--purple)',
+      G.productivity != null ? { target: G.productivity, actual: m.avgProd } : null),
+    m.hasQuality ? kpiCard('Quality', fmtPct(m.avgQuality), 'Year-to-Date average', 'var(--deep)',
+      G.quality != null ? { target: G.quality, actual: m.avgQuality } : null) : '',
+    m.hasAttendance ? kpiCard('Attendance', fmtPct(m.avgAttendance), 'Year-to-Date average', 'var(--cyan)',
+      G.attendance != null ? { target: G.attendance, actual: m.avgAttendance } : null) : '',
+    kpiCard('YTD productivity count', fmtInt(m.totalCount),
+      'avg <b>' + fmtInt(m.avgCount) + '</b> per month', 'var(--blue)', null,
+      m.prev ? dArrow(m.latest.count - m.prev.count, fmtInt) : ''),
+    ECOB.INVENTORY.latest ? kpiCard('Today’s inventory', fmtInt(ECOB.INVENTORY.latest.count),
+      'as of <b>' + esc(ECOB.INVENTORY.latest.date) + '</b>', 'var(--cyan)', null,
+      ECOB.INVENTORY.prev
+        ? '<span class="delta ' + (ECOB.INVENTORY.latest.count >= ECOB.INVENTORY.prev.count ? 'up' : 'down') + '">' +
+          (ECOB.INVENTORY.latest.count >= ECOB.INVENTORY.prev.count ? '▲' : '▼') + ' ' +
+          fmtInt(Math.abs(ECOB.INVENTORY.latest.count - ECOB.INVENTORY.prev.count)) + ' vs ' + esc(ECOB.INVENTORY.prev.date) + '</span>'
+        : '') : ''
+  ].join('');
+
+  var prod = m.months.map(function (x) { return { month: x.month, value: x.productivity }; });
+  var cnt = m.months.map(function (x) { return { month: x.month, value: x.count }; });
+
+  var insights = buildInsights(m);
+  var nWatch = insights.filter(function (i) { return i.watch; }).length;
+  $('#insightMonth').textContent = m.latest.month;
+  $('#insightHealth').innerHTML = '<span class="dot"></span>' +
+    (insights.length - nWatch) + ' on track' + (nWatch ? ' · <b style="color:var(--amber)">' + nWatch + ' to watch</b>' : ' · all clear');
+  $('#insightList').innerHTML = insights.map(function (i) {
+    return '<li' + (i.watch ? ' class="watch"' : '') + '><span class="ins-dot"></span><div><span class="ins-name">' +
+      esc(i.name) + '</span><span class="ins-text">' + i.text + '</span></div>' +
+      '<span class="ins-tag ' + (i.watch ? 'watch">Watch' : 'ok">On track') + '</span></li>';
+  }).join('');
+
+  metricChart($('#chProd'), prod, {
+    gradId: 'gProd', gradTop: '#8271fa', gradBot: '#5c00bd',
+    trend: 'var(--deep)', swatch: '#8271fa', legend: 'YTD Productivity',
+    fmt: fmtPct, labelFmt: fmtPct
+  });
+  metricChart($('#chCount'), cnt, {
+    gradId: 'gCount', gradTop: '#44b8f3', gradBot: '#5c00bd',
+    trend: 'var(--deep)', swatch: '#44b8f3', legend: 'YTD Productivity Count',
+    fmt: fmtInt, labelFmt: fmtInt
+  });
+
+  $('#cardQuality').hidden = !m.hasQuality;
+  if (m.hasQuality) {
+    metricChart($('#chQuality'), m.months.map(function (x) { return { month: x.month, value: x.quality }; }), {
+      gradId: 'gQual', gradTop: '#7a33e0', gradBot: '#3a0078',
+      trend: 'var(--deep)', swatch: '#5c00bd', legend: 'YTD Quality',
+      fmt: fmtPct, labelFmt: fmtPct, zoom: true,
+      axisFmt: function (v) { return v.toFixed(1) + '%'; }
+    });
+  }
+  $('#cardAttendance').hidden = !m.hasAttendance;
+  if (m.hasAttendance) {
+    metricChart($('#chAttendance'), m.months.map(function (x) { return { month: x.month, value: x.attendance }; }), {
+      gradId: 'gAtt', gradTop: '#00bcbb', gradBot: '#00706f',
+      trend: 'var(--cyan)', swatch: '#00bcbb', legend: 'YTD Attendance',
+      fmt: fmtPct, labelFmt: fmtPct, zoom: true,
+      axisFmt: function (v) { return v.toFixed(1) + '%'; }
+    });
+  }
+
+  var extraCols = [];
+  if (m.hasQuality) extraCols.push({ head: 'Quality', key: 'quality', goal: G.quality, avg: m.avgQuality });
+  if (m.hasAttendance) extraCols.push({ head: 'Attendance', key: 'attendance', goal: G.attendance, avg: m.avgAttendance });
+  var pctVal = function (v, target) {
+    return v == null ? '—' : (target != null && v < target ? '<span class="below-goal">' + fmtPct(v) + '</span>' : fmtPct(v));
+  };
+  var tfCell = '<td class="num" style="padding:9px 14px;border-top:2px solid var(--border)">';
+  $('#mTable').innerHTML =
+    '<thead><tr><th>Month</th><th class="num">Productivity</th><th class="num">Productivity Count</th>' +
+    extraCols.map(function (c) { return '<th class="num">' + c.head + '</th>'; }).join('') +
+    '</tr></thead><tbody>' +
+    m.months.map(function (x) {
+      return '<tr><td><b>' + esc(x.month) + '</b></td><td class="num">' + pctVal(x.productivity, G.productivity) +
+        '</td><td class="num">' + fmtInt(x.count) + '</td>' +
+        extraCols.map(function (c) { return '<td class="num">' + pctVal(x[c.key], c.goal) + '</td>'; }).join('') +
+        '</tr>';
+    }).join('') +
+    '</tbody><tfoot><tr><td style="padding:9px 14px;border-top:2px solid var(--border);text-align:left"><b>YTD Average</b></td>' +
+    tfCell + '<b>' + pctVal(m.avgProd, G.productivity) + '</b></td>' +
+    tfCell + '<b>' + fmtInt(m.totalCount) + '</b></td>' +
+    extraCols.map(function (c) { return tfCell + '<b>' + pctVal(c.avg, c.goal) + '</b></td>'; }).join('') +
+    '</tr></tfoot>';
+
+  /* ---------- daily inventory ---------- */
+  var inv = ECOB.INVENTORY;
+  $('#invCard').hidden = !inv.rows.length;
+  if (inv.rows.length) {
+    $('#invTable').innerHTML =
+      '<thead><tr><th>Date</th><th class="num">Inventory</th><th class="num">Change vs prior day</th></tr></thead><tbody>' +
+      inv.rows.map(function (r, i) {
+        var d = i ? r.count - inv.rows[i - 1].count : null;
+        return '<tr><td><b>' + esc(r.date) + '</b></td><td class="num">' + fmtInt(r.count) + '</td><td class="num">' +
+          (d == null ? '—' : '<span class="delta ' + (d >= 0 ? 'up' : 'down') + '">' + (d >= 0 ? '▲' : '▼') + ' ' + fmtInt(Math.abs(d)) + '</span>') +
+          '</td></tr>';
+      }).join('') + '</tbody>';
+  }
+
+  staggerCards();
+  renderNotifications();
+}
+
+/* ---------- entrance stagger ---------- */
+function staggerCards() {
+  var cards = document.querySelectorAll('main .card');
+  for (var i = 0; i < cards.length; i++) cards[i].style.setProperty('--d', Math.min(i * 0.05, 0.45) + 's');
+}
+
+/* ---------- notifications ---------- */
+var notifBtn = $('#notifBtn'), notifPanel = $('#notifPanel');
+var notifItems = [];
+var announceCurrent = null;
+
+function drawNotifications() {
+  var badge = $('#notifBadge');
+  badge.hidden = !notifItems.length;
+  badge.textContent = notifItems.length;
+  $('#notifSub').textContent = notifItems.length ? notifItems.length + ' to review' : '';
+  $('#notifList').innerHTML = notifItems.length
+    ? notifItems.map(function (n, i) {
+        return '<div class="notif-item" data-i="' + i + '"><span class="ins-dot" style="background:var(--amber)"></span>' +
+          '<div><b>' + n.t + '</b><span class="t">' + n.s + '</span></div></div>';
+      }).join('')
+    : '<div class="notif-empty">All metrics on track — nothing to review.</div>';
+}
+
+function renderNotifications() {
+  if (!model) return;
+  var G = METRICS_META.goals || {};
+  notifItems = [];
+  buildInsights(model).forEach(function (i) {
+    if (i.watch) notifItems.push({ t: esc(i.name) + ' — needs attention', s: i.text });
+  });
+  var below = model.months.filter(function (x) { return G.productivity != null && x.productivity < G.productivity; });
+  if (below.length) {
+    notifItems.push({
+      t: below.length + ' month' + (below.length > 1 ? 's' : '') + ' below the productivity goal',
+      s: esc(below.map(function (x) { return x.month; }).join(', ')) + ' fell under the ' + G.productivity + '% goal.'
+    });
+  }
+  drawNotifications();
+}
+
+function flashTo(sel) {
+  var el = document.querySelector(sel);
+  if (!el) return;
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  el.classList.remove('flash');
+  void el.offsetWidth;
+  el.classList.add('flash');
+}
+
+notifBtn.addEventListener('click', function (e) {
+  e.stopPropagation();
+  notifPanel.hidden = !notifPanel.hidden;
+  notifBtn.setAttribute('aria-expanded', String(!notifPanel.hidden));
+});
+document.addEventListener('click', function (e) {
+  if (!notifPanel.hidden && !e.target.closest('.notif-wrap')) {
+    notifPanel.hidden = true;
+    notifBtn.setAttribute('aria-expanded', 'false');
+  }
+});
+$('#notifList').addEventListener('click', function (e) {
+  var item = e.target.closest('.notif-item');
+  if (!item) return;
+  var i = +item.getAttribute('data-i'), n = notifItems[i];
+  if (!n) return;
+  notifPanel.hidden = true;
+  notifBtn.setAttribute('aria-expanded', 'false');
+  showAnnounce('<b>' + n.t + '</b><br>' + n.s, { kind: 'notif', i: i });
+});
+
+/* ---------- announcement / notification bar ---------- */
+function showAnnounce(html, src) {
+  announceCurrent = src;
+  $('#announceText').innerHTML = html;
+  $('#announce').hidden = false;
+}
+$('#announceDismiss').addEventListener('click', function () {
+  $('#announce').hidden = true;
+  if (announceCurrent && announceCurrent.kind === 'notif') {
+    notifItems.splice(announceCurrent.i, 1);
+    drawNotifications();
+  } else if (announceCurrent && announceCurrent.kind === 'meta') {
+    localStorage.setItem('ecob-announce-dismissed', announceCurrent.msg);
+  }
+  announceCurrent = null;
+});
+function initAnnouncement() {
+  var msg = METRICS_META.announcement;
+  if (!msg || localStorage.getItem('ecob-announce-dismissed') === msg) return;
+  showAnnounce(esc(msg), { kind: 'meta', msg: msg });
+}
+
+/* ---------- admin-save flag: one-shot banner after edits are published ---------- */
+(function () {
+  try {
+    if (!localStorage.getItem('ecob-admin-saved')) return;
+    localStorage.removeItem('ecob-admin-saved');
+    var stamp = (METRICS_META.refreshed || '').trim();
+    showAnnounce('<b>Admin changes saved</b> — dashboard values updated' + (stamp ? ' (refreshed ' + esc(stamp) + ')' : '') + '.', null);
+  } catch (e) {}
+})();
+
+/* ---------- button ripple ---------- */
+document.addEventListener('click', function (e) {
+  var b = e.target.closest('.btn');
+  if (!b) return;
+  var r = b.getBoundingClientRect(), d = Math.max(r.width, r.height);
+  var s = document.createElement('span');
+  s.className = 'ripple';
+  s.style.width = s.style.height = d + 'px';
+  s.style.left = (e.clientX - r.left - d / 2) + 'px';
+  s.style.top = (e.clientY - r.top - d / 2) + 'px';
+  b.appendChild(s);
+  setTimeout(function () { s.remove(); }, 600);
+});
+
+/* ---------- command palette ---------- */
+var overlay = $('#paletteOverlay'), pInput = $('#paletteInput'), pList = $('#paletteList');
+var pItems = [], pIndex = 0;
+
+function paletteItems() {
+  var items = [];
+  if (model) {
+    var L = model.latest;
+    items.push({ cat: 'Latest metrics', t: 'Productivity — ' + L.month, hint: fmtPct(L.productivity), ic: '%', sel: '#cardProd' });
+    items.push({ cat: 'Latest metrics', t: 'Production count — ' + L.month, hint: fmtInt(L.count), ic: '#', sel: '#cardCount' });
+    if (model.hasQuality) items.push({ cat: 'Latest metrics', t: 'Quality — ' + L.month, hint: fmtPct(L.quality), ic: '✓', sel: '#cardQuality' });
+    if (model.hasAttendance) items.push({ cat: 'Latest metrics', t: 'Attendance — ' + L.month, hint: fmtPct(L.attendance), ic: '◷', sel: '#cardAttendance' });
+  }
+  items.push({ cat: 'Go to', t: 'KPI summary', ic: '◆', sel: '#kpiGrid' });
+  items.push({ cat: 'Go to', t: 'YTD Productivity chart', ic: '▤', sel: '#cardProd' });
+  items.push({ cat: 'Go to', t: 'YTD Productivity Count chart', ic: '▤', sel: '#cardCount' });
+  if (model && model.hasQuality) items.push({ cat: 'Go to', t: 'YTD Quality chart', ic: '▤', sel: '#cardQuality' });
+  if (model && model.hasAttendance) items.push({ cat: 'Go to', t: 'YTD Attendance chart', ic: '▤', sel: '#cardAttendance' });
+  items.push({ cat: 'Go to', t: 'Current Month Snapshot', ic: '✓', sel: '#snapshotCard' });
+  items.push({ cat: 'Go to', t: 'Monthly detail table', ic: '≡', sel: '#tableCard' });
+  if (model) model.months.forEach(function (mo) {
+    items.push({ cat: 'Months', t: mo.month + ' — ' + fmtPct(mo.productivity), hint: fmtInt(mo.count) + ' items', ic: '◔', sel: '#tableCard' });
+  });
+  items.push({ cat: 'Actions', t: 'Toggle dark / light theme', ic: '◐', run: function () { $('#themeToggle').click(); } });
+  items.push({ cat: 'Actions', t: 'Back to top', ic: '↑', run: function () { window.scrollTo({ top: 0, behavior: 'smooth' }); } });
+  return items;
+}
+
+function openPalette() {
+  overlay.classList.add('open');
+  pInput.value = '';
+  renderPalette('');
+  setTimeout(function () { pInput.focus(); }, 30);
+}
+function closePalette() { overlay.classList.remove('open'); }
+
+function renderPalette(q) {
+  q = q.trim().toLowerCase();
+  pItems = paletteItems().filter(function (it) {
+    return !q || (it.t + ' ' + it.cat + ' ' + (it.hint || '')).toLowerCase().indexOf(q) > -1;
+  }).slice(0, 20);
+  pIndex = 0;
+  var html = '', lastCat = '';
+  pItems.forEach(function (it, i) {
+    if (it.cat !== lastCat) { html += '<div class="palette-cat">' + it.cat + '</div>'; lastCat = it.cat; }
+    html += '<div class="palette-item" role="option" data-i="' + i + '"><span class="pi-ic">' + it.ic + '</span>' +
+      '<span>' + esc(it.t) + '</span>' + (it.hint ? '<small>' + esc(it.hint) + '</small>' : '') + '</div>';
+  });
+  pList.innerHTML = html || '<div class="palette-empty">No matches — try “quality”, “table”, or a month name.</div>';
+  highlightPalette();
+}
+function highlightPalette() {
+  var rows = pList.querySelectorAll('.palette-item');
+  rows.forEach(function (r, i) { r.classList.toggle('active', i === pIndex); });
+  if (rows[pIndex]) rows[pIndex].scrollIntoView({ block: 'nearest' });
+}
+function runPalette(i) {
+  var it = pItems[i];
+  if (!it) return;
+  closePalette();
+  if (it.run) it.run();
+  else if (it.sel) flashTo(it.sel);
+}
+
+pInput.addEventListener('input', function () { renderPalette(pInput.value); });
+pInput.addEventListener('keydown', function (e) {
+  var n = pItems.length;
+  if (!n) return;
+  if (e.key === 'ArrowDown') { e.preventDefault(); pIndex = (pIndex + 1) % n; highlightPalette(); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); pIndex = (pIndex - 1 + n) % n; highlightPalette(); }
+  else if (e.key === 'Enter') { e.preventDefault(); runPalette(pIndex); }
+});
+pList.addEventListener('click', function (e) {
+  var row = e.target.closest('.palette-item');
+  if (row) runPalette(+row.getAttribute('data-i'));
+});
+overlay.addEventListener('click', function (e) { if (e.target === overlay) closePalette(); });
+$('#paletteBtn').addEventListener('click', openPalette);
+$('#fab').addEventListener('click', openPalette);
+document.addEventListener('keydown', function (e) {
+  if ((e.ctrlKey || e.metaKey) && String(e.key).toLowerCase() === 'k') {
+    e.preventDefault();
+    if (overlay.classList.contains('open')) closePalette(); else openPalette();
+  } else if (e.key === 'Escape') {
+    closePalette();
+    if (!notifPanel.hidden) { notifPanel.hidden = true; notifBtn.setAttribute('aria-expanded', 'false'); }
+    if (!mascotPop.hidden) toggleMascotPop(false);
+  }
+});
+
+/* ---------- preview / theme ---------- */
+function useData(text) {
+  var months = loadMonths(text);
+  if (!months.length) { alert('No usable rows found — keep the header row: month,productivity,prod_count'); return; }
+  model = buildModel(months);
+  render(model);
+}
+
+function syncThemeState() {
+  var el = $('#themeState');
+  if (el) el.textContent = document.documentElement.getAttribute('data-theme') === 'light' ? 'Light' : 'Dark';
+}
+$('#themeToggle').addEventListener('click', function () {
+  var cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', cur);
+  localStorage.setItem('ecob-theme', cur);
+  syncThemeState();
+});
+syncThemeState();
+
+/* ---------- sidebar (mobile drawer) ---------- */
+var sidebar = $('#sidebar'), sideScrim = $('#sideScrim');
+function closeSidebar() { sidebar.classList.remove('open'); sideScrim.classList.remove('show'); }
+$('#sideToggle').addEventListener('click', function () {
+  sidebar.classList.toggle('open');
+  sideScrim.classList.toggle('show', sidebar.classList.contains('open'));
+});
+sideScrim.addEventListener('click', closeSidebar);
+
+/* ---------- mascot assistant ---------- */
+var mascotPop = $('#mascotPop'), mascotBubble = $('#mascotBubble');
+var mpBody = $('#mpBody'), mpInput = $('#mpInput');
+
+function toggleMascotPop(show) {
+  mascotPop.hidden = show != null ? !show : !mascotPop.hidden;
+  if (!mascotPop.hidden) { mascotBubble.hidden = true; setTimeout(function () { mpInput.focus(); }, 60); }
+}
+$('#mascotCta').addEventListener('click', function () { toggleMascotPop(true); });
+$('#bubbleDismiss').addEventListener('click', function () { mascotBubble.hidden = true; });
+$('#mpClose').addEventListener('click', function () { toggleMascotPop(false); });
+$('#mascotImg').addEventListener('click', function () { toggleMascotPop(); });
+$('#mascotImg').addEventListener('keydown', function (e) {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleMascotPop(); }
+});
+document.addEventListener('click', function (e) {
+  if (!mascotPop.hidden && !e.target.closest('.mascot-wrap')) toggleMascotPop(false);
+});
+
+function ecoReply(q) {
+  return ECOB.reply(q, {
+    page: 'dash',
+    act: {
+      theme: function () { $('#themeToggle').click(); },
+      go: function (pg) { location.href = pg === 'guide' ? 'process-guide.html' : 'ecob-insights.html'; },
+      flash: function (sel) { toggleMascotPop(false); flashTo(sel); }
+    }
+  });
+}
+
+function sendMascotMsg() {
+  var q = mpInput.value.trim();
+  if (!q) return;
+  mpBody.insertAdjacentHTML('beforeend', '<div class="mp-msg user">' + esc(q) + '</div>');
+  mpInput.value = '';
+  mpBody.scrollTop = mpBody.scrollHeight;
+  setTimeout(function () {
+    mpBody.insertAdjacentHTML('beforeend', '<div class="mp-msg">' + ecoReply(q) + '</div>');
+    mpBody.scrollTop = mpBody.scrollHeight;
+  }, 450);
+}
+$('#mpSend').addEventListener('click', sendMascotMsg);
+mpInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') sendMascotMsg(); });
+
+initAnnouncement();
+useData(METRICS_CSV);
+ECOB.indexDom(document);
+})();
+</script>
+</body>
+</html>
